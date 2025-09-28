@@ -1,0 +1,132 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions for authentication and authorization
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isChannelMember(channelId) {
+      return isAuthenticated() && 
+        request.auth.uid in get(/databases/$(database)/documents/channels/$(channelId)).data.memberIds;
+    }
+    
+    function isChannelAdmin(channelId) {
+      return isAuthenticated() && 
+        request.auth.uid == get(/databases/$(database)/documents/channels/$(channelId)).data.adminId;
+    }
+    
+    function isEventOrganizer(eventId) {
+      return isAuthenticated() && 
+        request.auth.uid == get(/databases/$(database)/documents/events/$(eventId)).data.organizerId;
+    }
+    
+    function isValidUserData() {
+      return request.resource.data.keys().hasAll(['email', 'displayName', 'createdAt']) &&
+        request.resource.data.email is string &&
+        request.resource.data.displayName is string &&
+        request.resource.data.createdAt is timestamp;
+    }
+    
+    function isValidChannelData() {
+      return request.resource.data.keys().hasAll(['name', 'description', 'adminId', 'inviteCode', 'memberIds', 'createdAt']) &&
+        request.resource.data.name is string &&
+        request.resource.data.description is string &&
+        request.resource.data.adminId is string &&
+        request.resource.data.inviteCode is string &&
+        request.resource.data.memberIds is list &&
+        request.resource.data.createdAt is timestamp;
+    }
+    
+    function isValidEventData() {
+      return request.resource.data.keys().hasAll(['channelId', 'organizerId', 'title', 'description', 'scheduledAt', 'location', 'maxParticipants', 'createdAt']) &&
+        request.resource.data.channelId is string &&
+        request.resource.data.organizerId is string &&
+        request.resource.data.title is string &&
+        request.resource.data.description is string &&
+        request.resource.data.scheduledAt is timestamp &&
+        request.resource.data.location is string &&
+        request.resource.data.maxParticipants is number &&
+        request.resource.data.createdAt is timestamp;
+    }
+    
+    // Users collection rules
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isOwner(userId) && isValidUserData();
+      allow update: if isOwner(userId) && isValidUserData();
+      allow delete: if isOwner(userId);
+    }
+    
+    // Channels collection rules
+    match /channels/{channelId} {
+      allow read: if isChannelMember(channelId);
+      allow create: if isAuthenticated() && isValidChannelData() && 
+        request.auth.uid == request.resource.data.adminId;
+      allow update: if isChannelAdmin(channelId) && isValidChannelData();
+      allow delete: if isChannelAdmin(channelId);
+      
+      // Channel rules subcollection
+      match /rules/{ruleId} {
+        allow read: if isChannelMember(channelId);
+        allow write: if isChannelAdmin(channelId);
+      }
+    }
+    
+    // Events collection rules
+    match /events/{eventId} {
+      allow read: if isChannelMember(resource.data.channelId);
+      allow create: if isAuthenticated() && isValidEventData() && 
+        isChannelMember(request.resource.data.channelId) &&
+        request.auth.uid == request.resource.data.organizerId;
+      allow update: if isEventOrganizer(eventId) && isValidEventData();
+      allow delete: if isEventOrganizer(eventId);
+    }
+    
+    // Settlements collection rules
+    match /settlements/{settlementId} {
+      allow read: if isAuthenticated() && (
+        request.auth.uid == resource.data.organizerId ||
+        request.auth.uid in resource.data.participantAmounts.keys()
+      );
+      allow create: if isAuthenticated() && 
+        request.auth.uid == request.resource.data.organizerId &&
+        isEventOrganizer(request.resource.data.eventId);
+      allow update: if isAuthenticated() && (
+        request.auth.uid == resource.data.organizerId ||
+        (request.auth.uid in resource.data.participantAmounts.keys() && 
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['paymentStatus']))
+      );
+      allow delete: if isAuthenticated() && request.auth.uid == resource.data.organizerId;
+    }
+    
+    // Notifications collection rules
+    match /notifications/{notificationId} {
+      allow read: if isAuthenticated() && request.auth.uid in resource.data.recipientIds;
+      allow create: if isAuthenticated() && isChannelAdmin(request.resource.data.channelId);
+      allow update: if isAuthenticated() && request.auth.uid in resource.data.recipientIds &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']);
+      allow delete: if false; // Notifications should not be deleted
+    }
+    
+    // Chat history collection rules
+    match /chatHistory/{userId}/channels/{channelId}/messages/{messageId} {
+      allow read, write: if isOwner(userId) && isChannelMember(channelId);
+    }
+    
+    // User channel roles collection rules
+    match /userChannelRoles/{roleId} {
+      allow read: if isAuthenticated() && (
+        request.auth.uid == resource.data.userId ||
+        isChannelAdmin(resource.data.channelId)
+      );
+      allow create, update: if isChannelAdmin(resource.data.channelId);
+      allow delete: if isChannelAdmin(resource.data.channelId) || 
+        isOwner(resource.data.userId);
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "our_bung_play[DEV]",
+            "cwd": "${workspaceFolder}",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "flutterMode": "debug"
+        },
+        {
+            "name": "our_bung_play",
+            "cwd": "${workspaceFolder}",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "flutterMode": "release"
+        },
+    ]
+}

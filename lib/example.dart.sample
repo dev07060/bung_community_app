@@ -1,0 +1,216 @@
+import 'package:flutter/material.dart';
+import 'package:gap/gap.dart';
+
+class NotificationPermissionPage extends StatelessWidget {
+  const NotificationPermissionPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+    final colors = FColors.of(context);
+
+    return FScaffold(
+      canPop: false,
+      appBar: FAppBar.close(
+        pop: () {
+          _toggleMarketing(context, signal, false);
+        },
+        context,
+        backgroundColor: colors.backgroundNormalN,
+      ),
+      backgroundColor: colors.backgroundNormalN,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildTitle(context),
+              _buildMenuItems(context),
+              const SizedBox(height: 24), // Spacer 대신 고정된 높이의 SizedBox 사용
+            ],
+          ),
+        ),
+      ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildBottomSection(signal, context),
+            Gap(12 + bottomPadding),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTitle(BuildContext context) {
+    final colors = FColors.of(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Gap(32),
+        Text(
+          LocaleStr.of(context).c_push_policy_guide_title1,
+          style: FTextStyles.title2_20.b.copyWith(
+            color: colors.labelStrong,
+          ),
+        ),
+        const Gap(32),
+      ],
+    );
+  }
+
+  Widget _buildMenuItems(BuildContext context) {
+    return Column(
+      children: [
+        _buildMenuItem(
+          context,
+          iconPath: Assets.iconsEmojiSalad,
+          title: LocaleStr.of(context).c_push_policy_guide_title2,
+          subtitle: LocaleStr.of(context).c_push_policy_guide_sub1,
+        ),
+        const Gap(8),
+        _buildMenuItem(
+          context,
+          iconPath: Assets.iconsEmojiSclae,
+          title: LocaleStr.of(context).c_push_policy_guide_title3,
+          subtitle: LocaleStr.of(context).c_push_policy_guide_sub2,
+        ),
+        const Gap(8),
+        _buildMenuItem(
+          context,
+          iconPath: Assets.svgFietFitnessLogoBlack,
+          title: LocaleStr.of(context).c_push_policy_guide_title4,
+          subtitle: LocaleStr.of(context).c_push_policy_guide_sub3,
+        ),
+        const Gap(8),
+        _buildMenuItem(
+          context,
+          iconPath: Assets.iconsEmojiGift,
+          title: LocaleStr.of(context).c_push_policy_guide_title5,
+          subtitle: LocaleStr.of(context).c_push_policy_guide_sub4,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBottomSection(NotificationPermissionSignal signal, BuildContext context) {
+    final colors = FColors.of(context);
+
+    return Column(
+      children: [
+        InkWell(
+          onTap: () => LaunchUrl.open(
+            Uri.parse(
+              NetworkConstant.TERMS_URL,
+            ),
+          ),
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 2),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: colors.lineNeutral,
+                  width: 1,
+                ),
+              ),
+            ),
+            child: Text(
+              LocaleStr.of(context).c_my_terms_marketing,
+              style: FTextStyles.bodyM.m.copyWith(
+                color: colors.labelAlternative,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+        const Gap(16),
+        Row(
+          children: [
+            Expanded(
+              child: FSolidButton.secondary(
+                size: FSolidButtonSize.large,
+                onPressed: () {
+                  _toggleMarketing(context, signal, false);
+                },
+                text: LocaleStr.of(context).c_push_policy_bt_no,
+              ),
+            ),
+            const Gap(8),
+            Expanded(
+              child: FSolidButton.primary(
+                size: FSolidButtonSize.large,
+                onPressed: () {
+                  _toggleMarketing(context, signal, true);
+                },
+                text: LocaleStr.of(context).c_push_policy_bt_accept,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMenuItem(
+    BuildContext context, {
+    required String iconPath,
+    required String title,
+    required String subtitle,
+  }) {
+    final colors = FColors.of(context);
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: colors.solidAssistive,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              SizedBox(
+                width: 24,
+                height: 24,
+                child: FSvg.asset(
+                  iconPath,
+                  color: iconPath == Assets.svgFietFitnessLogoBlack ? colors.labelStrong : null,
+                ),
+              ),
+              const Gap(12),
+              Text(
+                title,
+                style: FTextStyles.title4_17.b.copyWith(
+                  color: colors.labelNormal,
+                ),
+              ),
+            ],
+          ),
+          const Gap(7),
+          Text(
+            subtitle,
+            style: FTextStyles.body1_16Rd.copyWith(
+              color: colors.labelNeutral,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 이벤트 및 마케팅 알림 토글
+  /// In NotificationPermissionPage
+  void _toggleMarketing(BuildContext context, NotificationPermissionSignal signal, bool isAgreed) {
+    signal.toggleMarketing(isAgreed).then((value) async {
+      if (value == null) return;
+
+      await marketingCheckComplete(context, isAgreed);
+    });
+  }
+}

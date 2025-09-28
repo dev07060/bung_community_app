@@ -1,0 +1,131 @@
+name: our_bung_play
+description: "A new Flutter project."
+
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.4.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+
+  # State Management
+  flutter_riverpod: ^2.4.0
+  riverpod_annotation: ^2.3.0
+  flutter_hooks: ^0.20.0
+  hooks_riverpod: ^2.4.0
+
+  # Firebase
+  firebase_core: ^4.1.0
+  firebase_auth: ^6.0.2
+  cloud_firestore: ^6.0.1
+  firebase_storage: ^13.0.1
+  firebase_messaging: ^16.0.1
+  firebase_crashlytics: ^5.0.1
+  firebase_analytics: ^12.0.1
+
+  # Google Sign In
+  google_sign_in: ^6.2.1
+  sign_in_with_apple: ^7.0.1
+
+  # UI & Navigation
+  go_router: ^16.2.1
+  flutter_screenutil: ^5.9.3
+  cached_network_image: ^3.4.1
+  image_picker: ^1.1.2
+  permission_handler: ^12.0.1
+
+  # Utilities
+  freezed_annotation: ^2.4.1
+  json_annotation: ^4.9.0
+  intl: ^0.20.2
+  uuid: ^4.5.1
+  crypto: ^3.0.3
+  connectivity_plus: ^6.0.5
+  
+  # HTTP & API
+  dio: ^5.7.0
+  retrofit: ^4.4.1
+
+  # Local Storage
+  shared_preferences: ^2.3.3
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+
+  # Image Processing
+  image: ^4.2.0
+  gap: ^3.0.1
+  table_calendar: ^3.2.0
+  flutter_bounceable: ^1.2.0
+  flutter_svg: ^2.2.1
+  fluttertoast: ^8.2.12
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^3.0.0
+
+  # Code Generation
+  build_runner: ^2.4.13
+  riverpod_generator: ^2.4.0
+  freezed: ^2.5.0
+  json_serializable: ^6.7.0
+  retrofit_generator: ^8.1.0
+
+  # Testing
+  mockito: ^5.4.4
+  # integration_test:
+  #   sdk: flutter
+
+# For information on the generic Dart part of this file, see the
+# following page: https://dart.dev/tools/pub/pubspec
+
+# The following section is specific to Flutter packages.
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/svg/
+    - assets/fonts/
+    - assets/fonts/pretendard/
+    - assets/env/
+    - assets/keys/
+    - assets/icons/
+    - assets/icons/player/
+    - assets/icons/chevrons/
+    - assets/icons/emoji/
+    - assets/icons/empty/
+    - assets/icons/normal/
+    - assets/icons/sns/
+    - assets/icons/socials/
+    - assets/icons/tab_bar/
+    - assets/icons/tabbar/
+    - assets/icons/palette/
+    - assets/images/
+
+  fonts:
+    - family: Pretendard
+      fonts:
+        - asset: assets/fonts/pretendard/Pretendard-Thin.otf
+          weight: 100
+        - asset: assets/fonts/pretendard/Pretendard-ExtraLight.otf
+          weight: 200
+        - asset: assets/fonts/pretendard/Pretendard-Light.otf
+          weight: 300
+        - asset: assets/fonts/pretendard/Pretendard-Regular.otf
+          weight: 400
+        - asset: assets/fonts/pretendard/Pretendard-Medium.otf
+          weight: 500
+        - asset: assets/fonts/pretendard/Pretendard-SemiBold.otf
+          weight: 600
+        - asset: assets/fonts/pretendard/Pretendard-Bold.otf
+          weight: 700
+        - asset: assets/fonts/pretendard/Pretendard-ExtraBold.otf
+          weight: 800
+        - asset: assets/fonts/pretendard/Pretendard-Black.otf
+          weight: 900

@@ -7,46 +7,76 @@ import '../providers/auth_providers.dart';
 
 /// 인증 관련 이벤트를 처리하는 Mixin Class
 mixin class AuthEventMixin {
-  /// Google 로그인 실행
-  Future<void> onGoogleSignInTapped(WidgetRef ref) async {
-    Logger.info('Google sign in button tapped');
-
+  /// 안전한 비동기 작업 실행 헬퍼
+  Future<T?> safeAsyncOperation<T>(
+    Future<T> Function() operation, {
+    String? operationName,
+    void Function(dynamic error, StackTrace stack)? onError,
+  }) async {
     try {
-      await ref.read(authStateProvider.notifier).signInWithGoogle();
-      Logger.info('Google sign in completed');
-    } catch (e, stackTrace) {
-      Logger.error('Google sign in failed', e, stackTrace);
-      _handleAuthError(ref, e);
+      return await operation();
+    } catch (error, stack) {
+      final name = operationName ?? 'Unknown operation';
+      Logger.error('Error in $name', error, stack);
+      onError?.call(error, stack);
+      return null;
     }
+  }
+
+  /// 에러 스낵바 표시 헬퍼
+  void showErrorSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  /// Google 로그인 실행
+  Future<void> onGoogleSignInTapped(WidgetRef ref, [BuildContext? context]) async {
+    await safeAsyncOperation(
+      () async {
+        await ref.read(authStateProvider.notifier).signInWithGoogle();
+      },
+      operationName: 'Google sign in',
+      onError: (error, stack) {
+        if (context != null) {
+          _handleAuthError(context, error);
+        }
+      },
+    );
   }
 
   /// Apple 로그인 실행
-  Future<void> onAppleSignInTapped(WidgetRef ref) async {
-    Logger.info('Apple sign in button tapped');
-
-    try {
-      await ref.read(authStateProvider.notifier).signInWithApple();
-      Logger.info('Apple sign in completed');
-    } catch (e, stackTrace) {
-      Logger.error('Apple sign in failed', e, stackTrace);
-      _handleAuthError(ref, e);
-    }
+  Future<void> onAppleSignInTapped(WidgetRef ref, [BuildContext? context]) async {
+    await safeAsyncOperation(
+      () async {
+        await ref.read(authStateProvider.notifier).signInWithApple();
+      },
+      operationName: 'Apple sign in',
+      onError: (error, stack) {
+        if (context != null) {
+          _handleAuthError(context, error);
+        }
+      },
+    );
   }
 
   /// 로그아웃 실행
-  Future<void> onSignOutTapped(WidgetRef ref) async {
-    Logger.info('Sign out button tapped');
-
-    try {
-      await ref.read(authStateProvider.notifier).signOut();
-      Logger.info('Sign out completed');
-
-      // TODO: 성공 메시지 표시
-      // _showSuccessMessage(ref, '로그아웃되었습니다.');
-    } catch (e, stackTrace) {
-      Logger.error('Sign out failed', e, stackTrace);
-      _handleAuthError(ref, e);
-    }
+  Future<void> onSignOutTapped(WidgetRef ref, [BuildContext? context]) async {
+    await safeAsyncOperation(
+      () async {
+        await ref.read(authStateProvider.notifier).signOut();
+      },
+      operationName: 'Sign out',
+      onError: (error, stack) {
+        if (context != null) {
+          _handleAuthError(context, error);
+        }
+      },
+    );
   }
 
   /// 확인 다이얼로그와 함께 로그아웃
@@ -95,7 +125,7 @@ mixin class AuthEventMixin {
         // _showSuccessMessage(ref, '계정이 삭제되었습니다.');
       } catch (e, stackTrace) {
         Logger.error('Account deletion failed', e, stackTrace);
-        _handleAuthError(ref, e);
+        _handleAuthError(context, e);
       }
     } else {
       Logger.info('Account deletion cancelled by user');
@@ -178,7 +208,7 @@ mixin class AuthEventMixin {
   }
 
   /// 인증 에러 처리
-  void _handleAuthError(WidgetRef ref, dynamic error) {
+  void _handleAuthError(BuildContext context, dynamic error) {
     String message = '인증 중 오류가 발생했습니다.';
 
     if (error is AuthException) {
@@ -188,17 +218,7 @@ mixin class AuthEventMixin {
     }
 
     Logger.error('Auth error handled: $message');
-
-    // TODO: 에러 메시지 표시
-    // ref.read(snackbarProvider.notifier).showError(message);
-  }
-
-  /// 성공 메시지 표시
-  void _showSuccessMessage(WidgetRef ref, String message) {
-    Logger.info('Success message: $message');
-
-    // TODO: 성공 메시지 표시
-    // ref.read(snackbarProvider.notifier).showSuccess(message);
+    showErrorSnackBar(context, message);
   }
 
   /// 확인 다이얼로그 표시

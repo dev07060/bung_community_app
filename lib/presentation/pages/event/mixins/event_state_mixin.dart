@@ -1,11 +1,24 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:our_bung_play/core/enums/app_enums.dart';
+import 'package:our_bung_play/core/utils/logger.dart';
 import 'package:our_bung_play/domain/entities/event_entity.dart';
 import 'package:our_bung_play/presentation/providers/auth_providers.dart';
 import 'package:our_bung_play/presentation/providers/event_providers.dart';
 
 /// 벙 관련 상태를 참조하는 Mixin Class
 mixin class EventStateMixin {
+  /// 안전하게 AsyncValue를 처리하는 헬퍼 메서드
+  T? safeAsyncValue<T>(AsyncValue<T?> asyncValue, {T? fallback}) {
+    return asyncValue.when(
+      data: (data) => data,
+      loading: () => fallback,
+      error: (error, stack) {
+        Logger.error('AsyncValue error in EventStateMixin', error, stack);
+        return fallback;
+      },
+    );
+  }
+
   /// 특정 채널의 벙 목록 가져오기
   List<EventEntity> getChannelEvents(WidgetRef ref, String channelId) {
     return ref.watch(channelEventsProvider(channelId)).when(
@@ -26,11 +39,18 @@ mixin class EventStateMixin {
 
   /// 특정 벙 정보 가져오기
   EventEntity? getEvent(WidgetRef ref, String eventId) {
-    return ref.watch(eventProvider(eventId)).when(
-          data: (event) => event,
-          loading: () => null,
-          error: (_, __) => null,
-        );
+    final asyncValue = ref.watch(eventProvider(eventId));
+    return safeAsyncValue(asyncValue);
+  }
+
+  /// 특정 벙 정보를 .future 패턴으로 안전하게 가져오기
+  Future<EventEntity?> getEventAsync(WidgetRef ref, String eventId) async {
+    try {
+      return await ref.read(eventProvider(eventId).future);
+    } catch (error, stack) {
+      Logger.error('Error reading event future', error, stack);
+      return null;
+    }
   }
 
   /// 사용자가 참여 중인 벙 목록 가져오기
@@ -295,10 +315,17 @@ mixin class EventStateMixin {
 
   /// 현재 선택된 벙 정보 가져오기
   EventEntity? getCurrentEvent(WidgetRef ref) {
-    return ref.watch(currentEventProvider).when(
-          data: (event) => event,
-          loading: () => null,
-          error: (_, __) => null,
-        );
+    final asyncValue = ref.watch(currentEventProvider);
+    return safeAsyncValue(asyncValue);
+  }
+
+  /// 현재 선택된 벙 정보를 .future 패턴으로 안전하게 가져오기
+  Future<EventEntity?> getCurrentEventAsync(WidgetRef ref) async {
+    try {
+      return await ref.read(currentEventProvider.future);
+    } catch (error, stack) {
+      Logger.error('Error reading current event future', error, stack);
+      return null;
+    }
   }
 }

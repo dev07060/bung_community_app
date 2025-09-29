@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:our_bung_play/presentation/base/base_page.dart';
 import 'package:our_bung_play/presentation/pages/event_list/event_list_page.dart';
 import 'package:our_bung_play/presentation/pages/home/home_page.dart';
 import 'package:our_bung_play/presentation/pages/main/mixins/main_navigation_event_mixin.dart';
@@ -9,8 +10,20 @@ import 'package:our_bung_play/presentation/pages/settings/settings_page.dart';
 import 'package:our_bung_play/shared/themes/f_colors.dart';
 
 /// 메인 네비게이션 페이지 - 바텀 네비게이션 바를 포함한 메인 화면
-class MainNavigationPage extends HookConsumerWidget with MainNavigationStateMixin, MainNavigationEventMixin {
+class MainNavigationPage extends BasePage with MainNavigationStateMixin, MainNavigationEventMixin {
   const MainNavigationPage({super.key});
+
+  @override
+  Widget buildPage(BuildContext context, WidgetRef ref) {
+    return const _MainNavigationContent();
+  }
+
+  @override
+  bool get wrapWithSafeArea => false; // AppBar를 직접 관리하므로 SafeArea 비활성화
+}
+
+class _MainNavigationContent extends HookConsumerWidget with MainNavigationStateMixin, MainNavigationEventMixin {
+  const _MainNavigationContent();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -26,9 +39,9 @@ class MainNavigationPage extends HookConsumerWidget with MainNavigationStateMixi
         controller: pageController,
         onPageChanged: (index) => currentIndex.value = index,
         children: const [
-          HomePage(),
-          EventListPage(),
-          SettingsPage(),
+          HomePage(showAppBar: false),
+          EventListPage(showAppBar: false),
+          SettingsPage(showAppBar: false),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(

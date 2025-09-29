@@ -10,7 +10,9 @@ import 'package:our_bung_play/shared/themes/f_font_styles.dart';
 
 /// 설정 페이지 - 사용자 설정 및 관리자 기능을 제공
 class SettingsPage extends BasePage with SettingsStateMixin, SettingsEventMixin {
-  const SettingsPage({super.key});
+  const SettingsPage({super.key, this.showAppBar = true});
+
+  final bool showAppBar;
 
   @override
   Widget buildPage(BuildContext context, WidgetRef ref) {
@@ -32,6 +34,9 @@ class SettingsPage extends BasePage with SettingsStateMixin, SettingsEventMixin 
 
   @override
   PreferredSizeWidget? buildAppBar(BuildContext context, WidgetRef ref) {
+    // MainNavigationPage에서 사용될 때는 AppBar를 표시하지 않음
+    if (!showAppBar) return null;
+
     return FAppBar.back(
       context,
       title: '설정',

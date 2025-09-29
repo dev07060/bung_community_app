@@ -68,6 +68,7 @@ abstract class BasePage extends HookConsumerWidget {
         },
         child: Scaffold(
           backgroundColor: screenBackgroundColor,
+          appBar: buildAppBar(context, ref),
           body: wrapWithSafeArea ? SafeArea(child: buildPage(context, ref)) : buildPage(context, ref),
           bottomNavigationBar: buildBottomNavigationBar(context, ref),
           floatingActionButton: buildFloatingActionButton(context, ref),

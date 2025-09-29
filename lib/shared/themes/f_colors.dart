@@ -9,7 +9,7 @@ class FColors {
 
   FColors._();
 
-  static bool _isBrightTheme = false;
+  static bool _isBrightTheme = true;
 
   static bool get isBrightTheme => _isBrightTheme;
 

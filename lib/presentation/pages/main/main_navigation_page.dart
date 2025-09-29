@@ -45,7 +45,7 @@ class _MainNavigationContent extends HookConsumerWidget with MainNavigationState
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: FColors.current.backgroundAlternativeN,
+        backgroundColor: FColors.current.white,
         currentIndex: currentIndex.value,
         onTap: (index) => onTabTapped(index, pageController, currentIndex),
         type: BottomNavigationBarType.fixed,

@@ -252,13 +252,14 @@ mixin class EventEventMixin {
     }
   }
 
-  // Private helper methods
+  // Helper methods from PageEventMixin
   void _showSuccessSnackBar(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
         backgroundColor: Colors.green,
         behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 3),
       ),
     );
   }
@@ -269,8 +270,25 @@ mixin class EventEventMixin {
         content: Text(message),
         backgroundColor: Colors.red,
         behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 3),
       ),
     );
+  }
+
+  /// 안전한 비동기 작업 실행 헬퍼
+  Future<T?> _safeAsyncOperation<T>(
+    Future<T> Function() operation, {
+    String? operationName,
+    void Function(dynamic error, StackTrace stack)? onError,
+  }) async {
+    try {
+      return await operation();
+    } catch (error, stack) {
+      final name = operationName ?? 'Unknown operation';
+      Logger.error('Error in $name', error, stack);
+      onError?.call(error, stack);
+      return null;
+    }
   }
 
   Future<bool> _showConfirmDialog(

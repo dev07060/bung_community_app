@@ -74,6 +74,38 @@ class GlobalProviderAccess {
     return globalContainer.read(providerFamily(arg));
   }
 
+  /// FutureProvider의 .future를 안전하게 읽기
+  static Future<T?> readFutureSafe<T>(FutureProvider<T> provider) async {
+    try {
+      return await globalContainer.read(provider.future);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// FutureProvider Family의 .future를 안전하게 읽기
+  static Future<T?> readFutureFamilySafe<T, Arg>(
+    FutureProvider<T> Function(Arg) providerFamily,
+    Arg arg,
+  ) async {
+    try {
+      return await globalContainer.read(providerFamily(arg).future);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// AsyncNotifierProvider의 .future를 안전하게 읽기
+  static Future<T?> readAsyncNotifierFutureSafe<T>(
+    AsyncNotifierProvider<AsyncNotifier<T>, T> provider,
+  ) async {
+    try {
+      return await globalContainer.read(provider.future);
+    } catch (e) {
+      return null;
+    }
+  }
+
   /// Notifier Family 가져오기
   static NotifierT readNotifierFamily<NotifierT extends Notifier<T>, T, Arg>(
     NotifierProvider<NotifierT, T> Function(Arg) providerFamily,
@@ -83,11 +115,8 @@ class GlobalProviderAccess {
   }
 
   /// AsyncNotifier Family 가져오기
-  static NotifierT readAsyncNotifierFamily<
-    NotifierT extends AsyncNotifier<T>,
-    T,
-    Arg
-  >(AsyncNotifierProvider<NotifierT, T> Function(Arg) providerFamily, Arg arg) {
+  static NotifierT readAsyncNotifierFamily<NotifierT extends AsyncNotifier<T>, T, Arg>(
+      AsyncNotifierProvider<NotifierT, T> Function(Arg) providerFamily, Arg arg) {
     return globalContainer.read(providerFamily(arg).notifier);
   }
 }

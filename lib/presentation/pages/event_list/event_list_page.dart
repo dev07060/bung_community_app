@@ -13,7 +13,9 @@ import 'package:our_bung_play/shared/themes/f_font_styles.dart';
 
 /// 전체 벙 일정 페이지 - 채널 내 모든 공개 벙 목록을 표시
 class EventListPage extends BasePage {
-  const EventListPage({super.key});
+  const EventListPage({super.key, this.showAppBar = true});
+
+  final bool showAppBar;
 
   @override
   Widget buildPage(BuildContext context, WidgetRef ref) {
@@ -27,6 +29,9 @@ class EventListPage extends BasePage {
 
   @override
   PreferredSizeWidget? buildAppBar(BuildContext context, WidgetRef ref) {
+    // MainNavigationPage에서 사용될 때는 AppBar를 표시하지 않음
+    if (!showAppBar) return null;
+
     final sortOption = ref.watch(eventListSortOptionProvider);
     final statusFilters = ref.watch(eventListStatusFiltersProvider);
     final activeFilterCount = _getActiveFilterCount(sortOption, statusFilters);

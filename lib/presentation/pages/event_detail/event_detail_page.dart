@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:our_bung_play/core/providers/argument_providers.dart';
 import 'package:our_bung_play/domain/entities/event_entity.dart';
+import 'package:our_bung_play/presentation/base/base_page.dart';
 import 'package:our_bung_play/presentation/pages/event/mixins/event_event_mixin.dart';
 import 'package:our_bung_play/presentation/pages/event/mixins/event_state_mixin.dart';
 import 'package:our_bung_play/presentation/pages/event_detail/mixins/event_detail_event_mixin.dart';
@@ -14,75 +16,92 @@ import 'package:our_bung_play/presentation/pages/event_detail/widgets/settlement
 import 'package:our_bung_play/presentation/providers/auth_providers.dart';
 import 'package:our_bung_play/presentation/providers/event_providers.dart';
 import 'package:our_bung_play/shared/components/f_app_bar.dart';
-import 'package:our_bung_play/shared/components/f_scaffold.dart';
 import 'package:our_bung_play/shared/themes/f_colors.dart';
 import 'package:our_bung_play/shared/themes/status_colors.dart';
 
-class EventDetailPage extends HookConsumerWidget
+class EventDetailPage extends BasePage
     with EventStateMixin, EventEventMixin, EventDetailStateMixin, EventDetailEventMixin {
   const EventDetailPage({super.key, required this.eventId});
   final String eventId;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  List<Override> getArgProviderOverrides() {
+    return [
+      eventDetailArgumentProvider.overrideWithValue(eventId),
+    ];
+  }
+
+  @override
+  Widget buildPage(BuildContext context, WidgetRef ref) {
+    return _EventDetailContent(eventId: eventId);
+  }
+
+  @override
+  PreferredSizeWidget? buildAppBar(BuildContext context, WidgetRef ref) {
     final colors = FColors.of(context);
     final currentEvent = getCurrentEvent(ref);
     final currentUser = ref.watch(currentUserProvider);
     final isOrganizer = currentEvent != null && currentUser != null && currentEvent.isOrganizer(currentUser.id);
-    final isParticipationLoading = isEventParticipationLoading(ref);
     final isOngoing = currentEvent != null && currentUser != null && currentEvent.isOngoing;
 
-    return FScaffold(
-      backgroundColor: colors.backgroundNormalN,
-      appBar: FAppBar.back(
-        context,
-        backgroundColor: colors.lightGreen,
-        title: '벙 상세 내용',
-        actions: [
-          if (isOrganizer && canManageEvent(ref, currentEvent.id) && !isOngoing)
-            PopupMenuButton<String>(
-              onSelected: (value) => _handleMenuAction(context, ref, value, currentEvent.id, currentEvent.channelId),
-              itemBuilder: (context) => [
-                const PopupMenuItem(
-                  value: 'edit',
-                  child: ListTile(leading: Icon(Icons.edit), title: Text('벙 수정'), contentPadding: EdgeInsets.zero),
-                ),
-                PopupMenuItem(
-                  value: currentEvent.isClosed ? 'reopen' : 'close',
-                  child: ListTile(
-                      leading: Icon(currentEvent.isClosed ? Icons.lock_open : Icons.lock),
-                      title: Text(currentEvent.isClosed ? '벙 재개방' : '벙 마감'),
-                      contentPadding: EdgeInsets.zero),
-                ),
-                const PopupMenuItem(
-                  value: 'cancel',
-                  child: ListTile(
-                      leading: Icon(Icons.cancel, color: Colors.red),
-                      title: Text('벙 취소', style: TextStyle(color: Colors.red)),
-                      contentPadding: EdgeInsets.zero),
-                ),
-              ],
-            ),
-        ],
-      ),
-      body: _EventDetailContent(eventId: eventId),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (currentEvent != null && currentUser != null)
-              ActionButtons(
-                event: currentEvent,
-                currentUserId: currentUser.id,
-                isParticipationLoading: isParticipationLoading,
+    return FAppBar.back(
+      context,
+      backgroundColor: colors.lightGreen,
+      title: '벙 상세 내용',
+      actions: [
+        if (isOrganizer && canManageEvent(ref, currentEvent.id) && !isOngoing)
+          PopupMenuButton<String>(
+            onSelected: (value) => _handleMenuAction(context, ref, value, currentEvent.id, currentEvent.channelId),
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'edit',
+                child: ListTile(leading: Icon(Icons.edit), title: Text('벙 수정'), contentPadding: EdgeInsets.zero),
               ),
-            Gap(12 + MediaQuery.of(context).padding.bottom),
-          ],
-        ),
+              PopupMenuItem(
+                value: currentEvent.isClosed ? 'reopen' : 'close',
+                child: ListTile(
+                    leading: Icon(currentEvent.isClosed ? Icons.lock_open : Icons.lock),
+                    title: Text(currentEvent.isClosed ? '벙 재개방' : '벙 마감'),
+                    contentPadding: EdgeInsets.zero),
+              ),
+              const PopupMenuItem(
+                value: 'cancel',
+                child: ListTile(
+                    leading: Icon(Icons.cancel, color: Colors.red),
+                    title: Text('벙 취소', style: TextStyle(color: Colors.red)),
+                    contentPadding: EdgeInsets.zero),
+              ),
+            ],
+          ),
+      ],
+    );
+  }
+
+  @override
+  Widget? buildBottomNavigationBar(BuildContext context, WidgetRef ref) {
+    final currentEvent = getCurrentEvent(ref);
+    final currentUser = ref.watch(currentUserProvider);
+    final isParticipationLoading = isEventParticipationLoading(ref);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (currentEvent != null && currentUser != null)
+            ActionButtons(
+              event: currentEvent,
+              currentUserId: currentUser.id,
+              isParticipationLoading: isParticipationLoading,
+            ),
+          Gap(12 + MediaQuery.of(context).padding.bottom),
+        ],
       ),
     );
   }
+
+  @override
+  Color? get screenBackgroundColor => FColors.current.backgroundNormalN;
 
   void _handleMenuAction(BuildContext context, WidgetRef ref, String action, String eventId, String channelId) {
     switch (action) {

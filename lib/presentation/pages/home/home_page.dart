@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:our_bung_play/generated/assets.dart';
+import 'package:our_bung_play/presentation/base/base_page.dart';
 import 'package:our_bung_play/presentation/pages/home/mixins/home_event_mixin.dart';
 import 'package:our_bung_play/presentation/pages/home/widgets/home_view.dart';
 import 'package:our_bung_play/presentation/pages/home/widgets/no_channel_view.dart';
@@ -11,11 +12,13 @@ import 'package:our_bung_play/shared/sp_svg.dart';
 import 'package:our_bung_play/shared/themes/f_colors.dart';
 import 'package:our_bung_play/shared/themes/f_font_styles.dart';
 
-class HomePage extends ConsumerWidget with HomeEventMixin {
-  const HomePage({super.key});
+class HomePage extends BasePage with HomeEventMixin {
+  const HomePage({super.key, this.showAppBar = true});
+
+  final bool showAppBar;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget buildPage(BuildContext context, WidgetRef ref) {
     final userChannelsAsync = ref.watch(userChannelsProvider);
     final selectedChannel = ref.watch(selectedChannelProvider);
 
@@ -43,7 +46,11 @@ class HomePage extends ConsumerWidget with HomeEventMixin {
     );
   }
 
+  @override
   PreferredSizeWidget? buildAppBar(BuildContext context, WidgetRef ref) {
+    // MainNavigationPage에서 사용될 때는 AppBar를 표시하지 않음
+    if (!showAppBar) return null;
+
     final selectedChannel = ref.watch(selectedChannelProvider);
     final appBarTitle = selectedChannel?.name ?? 'Our Bung Play';
 

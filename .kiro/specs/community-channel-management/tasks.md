@@ -220,7 +220,7 @@
     - 상태 변화 테스트
     - _설계 문서의 테스트 전략 참조_
 
-- [ ] 20. Riverpod 아키텍처 최적화 및 리팩토링
+- [x] 20. Riverpod 아키텍처 최적화 및 리팩토링
   - 모든 페이지를 BasePage 패턴으로 리팩토링
   - State/Event Mixin Class 패턴 일관성 검토
   - ProviderScope Argument 관리 시스템 전체 적용

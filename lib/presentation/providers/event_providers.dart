@@ -413,13 +413,20 @@ String? currentEventId(CurrentEventIdRef ref) {
   return null;
 }
 
-// Current Event Entity Provider - 현재 선택된 벙 엔티티
-final currentEventProvider = AutoDisposeFutureProvider<EventEntity?>((ref) {
+// Current Event Entity Provider - 현재 선택된 벙 엔티티 (.future 패턴 최적화)
+final currentEventProvider = AutoDisposeFutureProvider<EventEntity?>((ref) async {
   final eventId = ref.watch(currentEventIdProvider);
   if (eventId == null) {
-    return Future.value(null);
+    return null;
   }
-  return ref.watch(eventProvider(eventId).future);
+
+  try {
+    // .future 패턴을 사용하여 안전하게 데이터 가져오기
+    return await ref.watch(eventProvider(eventId).future);
+  } catch (e, stackTrace) {
+    Logger.error('Failed to load current event', e, stackTrace);
+    return null;
+  }
 }, dependencies: [currentEventIdProvider]);
 
 // Event Argument Providers - ProviderScope를 통한 인자 전달

@@ -31,7 +31,7 @@ class EventCard extends ConsumerWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(.08),
+            color: Colors.black.withValues(alpha: .08),
             blurRadius: 10,
             offset: const Offset(3, 6),
           ),
@@ -116,7 +116,7 @@ class _CardInfo extends StatelessWidget {
               const Gap(12),
               Container(
                 decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor.withOpacity(.10),
+                  color: Theme.of(context).primaryColor.withValues(alpha: .10),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -192,27 +192,27 @@ class _StatusChip extends StatelessWidget {
 
     switch (status) {
       case EventStatus.scheduled:
-        backgroundColor = Colors.blue.withOpacity(0.1);
+        backgroundColor = Colors.blue.withValues(alpha: 0.1);
         textColor = Colors.blue;
         break;
       case EventStatus.closed:
-        backgroundColor = Colors.orange.withOpacity(0.1);
+        backgroundColor = Colors.orange.withValues(alpha: 0.1);
         textColor = Colors.orange;
         break;
       case EventStatus.ongoing:
-        backgroundColor = Colors.green.withOpacity(0.1);
+        backgroundColor = Colors.green.withValues(alpha: 0.1);
         textColor = Colors.green;
         break;
       case EventStatus.settlement:
-        backgroundColor = Colors.purple.withOpacity(0.1);
+        backgroundColor = Colors.purple.withValues(alpha: 0.1);
         textColor = Colors.purple;
         break;
       case EventStatus.completed:
-        backgroundColor = Colors.grey.withOpacity(0.1);
+        backgroundColor = Colors.grey.withValues(alpha: 0.1);
         textColor = Colors.grey;
         break;
       case EventStatus.cancelled:
-        backgroundColor = Colors.red.withOpacity(0.1);
+        backgroundColor = Colors.red.withValues(alpha: 0.1);
         textColor = Colors.red;
         break;
     }

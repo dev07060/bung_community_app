@@ -53,13 +53,14 @@ mixin MainNavigationEventMixin {
             const SizedBox(height: 20),
             const Text('모임에 참여해주세요', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            Text('벙을 만들려면 먼저 모임에 참여하거나 새로운 모임을 만들어야 해요', style: TextStyle(fontSize: 14, color: Colors.grey[600]), textAlign: TextAlign.center),
+            Text('벙을 만들려면 먼저 모임에 참여하거나 새로운 모임을 만들어야 해요',
+                style: TextStyle(fontSize: 14, color: Colors.grey[600]), textAlign: TextAlign.center),
             const SizedBox(height: 20),
             ListTile(
               leading: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor.withOpacity(0.1),
+                  color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(Icons.group_add, color: Theme.of(context).primaryColor),
@@ -75,7 +76,7 @@ mixin MainNavigationEventMixin {
               leading: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.1),
+                  color: Colors.green.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(Icons.link, color: Colors.green),
@@ -120,7 +121,7 @@ mixin MainNavigationEventMixin {
               leading: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.orange.withOpacity(0.1),
+                  color: Colors.orange.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(Icons.event_note, color: Colors.orange),
@@ -136,7 +137,7 @@ mixin MainNavigationEventMixin {
               leading: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor.withOpacity(0.1),
+                  color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(Icons.group_add, color: Theme.of(context).primaryColor),

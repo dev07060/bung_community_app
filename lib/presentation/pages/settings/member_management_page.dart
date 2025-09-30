@@ -78,9 +78,11 @@ class _MemberManagementContent extends HookConsumerWidget with MemberManagementS
             children: [
               _buildStatCard(context, '전체 멤버', '${members.length}명', Icons.people_outline, Colors.blue),
               const SizedBox(width: 16),
-              _buildStatCard(context, '활성 멤버', '${members.where((m) => m.status == UserStatus.active).length}명', Icons.check_circle_outline, Colors.green),
+              _buildStatCard(context, '활성 멤버', '${members.where((m) => m.status == UserStatus.active).length}명',
+                  Icons.check_circle_outline, Colors.green),
               const SizedBox(width: 16),
-              _buildStatCard(context, '제한 멤버', '${members.where((m) => m.status == UserStatus.restricted).length}명', Icons.person_off_outlined, Colors.orange),
+              _buildStatCard(context, '제한 멤버', '${members.where((m) => m.status == UserStatus.restricted).length}명',
+                  Icons.person_off_outlined, Colors.orange),
             ],
           ),
         ),
@@ -92,7 +94,8 @@ class _MemberManagementContent extends HookConsumerWidget with MemberManagementS
                   ? _buildEmptyState(context, searchQuery.value.isNotEmpty)
                   : ListView.separated(
                       itemCount: filteredMembers.length,
-                      separatorBuilder: (context, index) => const Divider(height: 1, thickness: 1, indent: 20, endIndent: 20),
+                      separatorBuilder: (context, index) =>
+                          const Divider(height: 1, thickness: 1, indent: 20, endIndent: 20),
                       itemBuilder: (context, index) {
                         final member = filteredMembers[index];
                         return _buildMemberTile(context, ref, member);
@@ -201,16 +204,19 @@ class _MemberManagementContent extends HookConsumerWidget with MemberManagementS
                 if (member.status == UserStatus.active)
                   const PopupMenuItem(
                     value: 'restrict',
-                    child: Row(children: [Icon(Icons.person_off, color: Colors.orange), SizedBox(width: 8), Text('활동 제한')]),
+                    child: Row(
+                        children: [Icon(Icons.person_off, color: Colors.orange), SizedBox(width: 8), Text('활동 제한')]),
                   ),
                 if (member.status == UserStatus.restricted)
                   const PopupMenuItem(
                     value: 'activate',
-                    child: Row(children: [Icon(Icons.check_circle, color: Colors.green), SizedBox(width: 8), Text('제한 해제')]),
+                    child: Row(
+                        children: [Icon(Icons.check_circle, color: Colors.green), SizedBox(width: 8), Text('제한 해제')]),
                   ),
                 const PopupMenuItem(
                   value: 'remove',
-                  child: Row(children: [Icon(Icons.person_remove, color: Colors.red), SizedBox(width: 8), Text('강제 탈퇴')]),
+                  child:
+                      Row(children: [Icon(Icons.person_remove, color: Colors.red), SizedBox(width: 8), Text('강제 탈퇴')]),
                 ),
               ],
             )
@@ -225,9 +231,9 @@ class _MemberManagementContent extends HookConsumerWidget with MemberManagementS
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Text(
         role.displayName,
@@ -253,9 +259,9 @@ class _MemberManagementContent extends HookConsumerWidget with MemberManagementS
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Text(
         status.displayName,

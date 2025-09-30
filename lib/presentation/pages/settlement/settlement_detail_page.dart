@@ -180,10 +180,10 @@ class _SettlementDetailContent extends HookConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: _getPaymentStatusColor(paymentStatus).withOpacity(0.1),
+        color: _getPaymentStatusColor(paymentStatus).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: _getPaymentStatusColor(paymentStatus).withOpacity(0.3),
+          color: _getPaymentStatusColor(paymentStatus).withValues(alpha: 0.3),
         ),
       ),
       child: Column(

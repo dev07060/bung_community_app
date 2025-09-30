@@ -408,7 +408,7 @@ class _SettlementManagementContent extends HookConsumerWidget {
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: _getPaymentStatusColor(paymentStatus).withOpacity(0.1),
+                      color: _getPaymentStatusColor(paymentStatus).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
                         color: _getPaymentStatusColor(paymentStatus),

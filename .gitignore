@@ -121,3 +121,18 @@ app.*.symbols
 # Tools
 .gemini/
 .kiro/
+
+# Firebase related
+**/google-services.json
+**/GoogleService-Info.plist
+**/firebase_app_id.json
+**/firebase_options.dart
+**/firebase.json
+**/firestore.indexes.json
+**/firestore.rules
+
+# Environment variables and keys
+.env
+.env.*
+*.env
+*.env.*

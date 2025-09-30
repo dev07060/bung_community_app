@@ -130,6 +130,7 @@ app.*.symbols
 **/firebase.json
 **/firestore.indexes.json
 **/firestore.rules
+**/service_account_key.json
 
 # Environment variables and keys
 .env

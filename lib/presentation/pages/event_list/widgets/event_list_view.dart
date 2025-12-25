@@ -26,7 +26,7 @@ class EventListView extends HookConsumerWidget {
     });
 
     if (channelId == null) {
-      return const _LoadingIndicator(); // Or a no-channel message
+      return const _NoChannelState();
     }
 
     final eventsAsync = ref.watch(channelEventsProvider(channelId));
@@ -37,10 +37,11 @@ class EventListView extends HookConsumerWidget {
         final searchResults = ref.watch(eventSearchProvider);
         final sortOption = ref.watch(eventListSortOptionProvider);
         final statusFilters = ref.watch(eventListStatusFiltersProvider);
+        final quickFilter = ref.watch(eventListQuickFilterProvider);
 
         final events = searchQuery.isNotEmpty
-            ? _applyFiltersAndSort(searchResults, sortOption, statusFilters)
-            : _applyFiltersAndSort(eventList, sortOption, statusFilters);
+            ? _applyFiltersAndSort(searchResults, sortOption, statusFilters, quickFilter)
+            : _applyFiltersAndSort(eventList, sortOption, statusFilters, quickFilter);
 
         if (events.isEmpty) {
           return CustomScrollView(
@@ -54,7 +55,7 @@ class EventListView extends HookConsumerWidget {
 
         return CustomScrollView(
           slivers: [
-            const SliverToBoxAdapter(child: SizedBox(height: 70)),
+            const SliverToBoxAdapter(child: SizedBox(height: 130)),
             SliverList(
               delegate: SliverChildBuilderDelegate(
                 (context, index) {
@@ -100,13 +101,44 @@ class EventListView extends HookConsumerWidget {
     List<EventEntity> events,
     EventSortOption sortOption,
     Set<EventStatus> statusFilters,
+    QuickFilter quickFilter,
   ) {
     var filteredEvents = List<EventEntity>.from(events);
 
+    // 빠른 필터 적용
+    switch (quickFilter) {
+      case QuickFilter.all:
+        // 전체: 필터 없음
+        break;
+      case QuickFilter.joinable:
+        // 참여 가능: 마감되지 않고 정원이 남은 벙
+        filteredEvents = filteredEvents.where((event) {
+          return event.status == EventStatus.scheduled && !event.isFull;
+        }).toList();
+        break;
+      case QuickFilter.closed:
+        // 마감: 마감 또는 취소된 벙
+        filteredEvents = filteredEvents.where((event) {
+          return event.status == EventStatus.closed || event.status == EventStatus.cancelled;
+        }).toList();
+        break;
+      case QuickFilter.today:
+        // 오늘 등록: 오늘 생성된 벙
+        final today = DateTime.now();
+        filteredEvents = filteredEvents.where((event) {
+          return event.createdAt.year == today.year &&
+              event.createdAt.month == today.month &&
+              event.createdAt.day == today.day;
+        }).toList();
+        break;
+    }
+
+    // 상태 필터 적용
     if (statusFilters.isNotEmpty) {
       filteredEvents = filteredEvents.where((event) => statusFilters.contains(event.status)).toList();
     }
 
+    // 정렬 적용
     switch (sortOption) {
       case EventSortOption.dateAsc:
         filteredEvents.sort((a, b) => a.scheduledAt.compareTo(b.scheduledAt));
@@ -239,3 +271,48 @@ class _EmptyState extends StatelessWidget {
     );
   }
 }
+
+/// 채널 미참여 시 표시되는 빈 상태 위젯
+class _NoChannelState extends StatelessWidget {
+  const _NoChannelState();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.groups_outlined,
+              size: 80,
+              color: Colors.grey[400],
+            ),
+            const Gap(24),
+            Text(
+              '참여한 모임이 없습니다',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: Colors.grey[700],
+                    fontWeight: FontWeight.bold,
+                  ),
+              textAlign: TextAlign.center,
+            ),
+            const Gap(12),
+            Text(
+              '모임에 참여하면 벙 일정을 확인할 수 있어요.\n초대 링크를 통해 모임에 참여해보세요!',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Colors.grey[500],
+                    height: 1.5,
+                  ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+

@@ -8,15 +8,16 @@ part 'user_entity.g.dart';
 class UserEntity with _$UserEntity {
   const factory UserEntity({
     required String id, // Firebase Auth UID
-    required String uuid, // 앱 내부 UUID
-    required String email,
-    required String displayName,
+    @Default('') String uuid, // 앱 내부 UUID
+    @Default('') String email,
+    @Default('') String displayName,
+    String? nickname, // 사용자 지정 닉네임
     String? photoURL,
     @Default([]) List<String> channelIds,
     @Default(UserRole.member) UserRole role,
     @Default(UserStatus.active) UserStatus status,
-    required DateTime createdAt,
-    required DateTime lastLoginAt,
+    DateTime? createdAt,
+    DateTime? lastLoginAt,
   }) = _UserEntity;
 
   const UserEntity._();
@@ -25,7 +26,7 @@ class UserEntity with _$UserEntity {
 
   // Validation methods
   bool get isValid =>
-      id.isNotEmpty && uuid.isNotEmpty && email.isNotEmpty && displayName.isNotEmpty && _isValidEmail(email);
+      id.isNotEmpty && uuid.isNotEmpty && email.isNotEmpty && _isValidEmail(email);
 
   bool get isAdmin => role == UserRole.admin;
   bool get isActive => status == UserStatus.active;
@@ -38,4 +39,16 @@ class UserEntity with _$UserEntity {
 
   String get displayRole => role.displayName;
   String get displayStatus => status.displayName;
+
+  /// 표시용 이름 (닉네임 > displayName > 이메일)
+  String get displayNameOrNickname =>
+      nickname?.isNotEmpty == true
+          ? nickname!
+          : displayName.isNotEmpty
+              ? displayName
+              : email;
+
+  /// 닉네임 설정 여부
+  bool get hasNickname => nickname?.isNotEmpty == true;
 }
+

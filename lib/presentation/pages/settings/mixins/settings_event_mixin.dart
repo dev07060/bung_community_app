@@ -182,18 +182,18 @@ mixin SettingsEventMixin {
 
     // 현재 사용자 정보 가져오기
     final authState = ref.read(authStateProvider);
-    final currentName = authState.when(
-      data: (user) => user?.displayName ?? '사용자',
-      loading: () => '사용자',
-      error: (_, __) => '사용자',
+    final currentNickname = authState.when(
+      data: (user) => user?.nickname ?? user?.displayName ?? '',
+      loading: () => '',
+      error: (_, __) => '',
     );
 
-    controller.text = currentName;
+    controller.text = currentNickname;
 
     return showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('프로필 편집'),
+        title: const Text('닉네임 수정'),
         content: TextField(
           controller: controller,
           decoration: const InputDecoration(
@@ -209,19 +209,30 @@ mixin SettingsEventMixin {
           ),
           TextButton(
             onPressed: () async {
-              final newName = controller.text.trim();
-              if (newName.isNotEmpty && newName != currentName) {
+              final newNickname = controller.text.trim();
+              if (newNickname.isEmpty) {
+                _showErrorSnackBar(context, '닉네임을 입력해주세요.');
+                return;
+              }
+              if (newNickname.length < 2) {
+                _showErrorSnackBar(context, '닉네임은 2글자 이상 입력해주세요.');
+                return;
+              }
+              if (newNickname != currentNickname) {
                 try {
-                  final userProfile = ref.read(userProfileProvider.notifier);
-                  await userProfile.updateProfile(displayName: newName);
+                  final authRepository = ref.read(authRepositoryProvider);
+                  await authRepository.updateProfile(nickname: newNickname);
+                  
+                  // authState 새로고침
+                  ref.invalidate(authStateProvider);
 
                   if (context.mounted) {
                     Navigator.of(context).pop();
-                    _showSuccessSnackBar(context, '프로필이 업데이트되었습니다.');
+                    _showSuccessSnackBar(context, '닉네임이 변경되었습니다.');
                   }
                 } catch (error) {
                   if (context.mounted) {
-                    _showErrorSnackBar(context, '프로필 업데이트 중 오류가 발생했습니다.');
+                    _showErrorSnackBar(context, '닉네임 변경 중 오류가 발생했습니다.');
                   }
                 }
               } else {

@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:our_bung_play/core/providers/user_providers.dart';
 import 'package:our_bung_play/domain/entities/event_entity.dart';
 import 'package:our_bung_play/shared/themes/f_colors.dart';
 
-class MembersCard extends StatelessWidget {
+class MembersCard extends ConsumerWidget {
   const MembersCard({super.key, required this.event});
 
   final EventEntity event;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colors = FColors.of(context);
     return Container(
       padding: const EdgeInsets.all(20),
@@ -60,45 +62,15 @@ class MembersCard extends StatelessWidget {
               final isOrganizer = event.isOrganizer(participantId);
 
               return Padding(
-                padding: EdgeInsets.only(bottom: index < event.participantIds.length - 1 ? 8 : 0),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 16,
-                      backgroundColor: isOrganizer ? Colors.orange : Colors.blue,
-                      child: Text(
-                        '${index + 1}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    const Gap(12),
-                    Expanded(
-                      child: Text(
-                        participantId, // Displaying ID as requested
-                        style: const TextStyle(fontSize: 14),
-                      ),
-                    ),
-                    if (isOrganizer)
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: Colors.orange.withValues(alpha: .1),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Text(
-                          '벙주',
-                          style: TextStyle(
-                            color: Colors.orange,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                  ],
+                padding: EdgeInsets.only(
+                  bottom: index < event.participantIds.length - 1 ? 8 : 0,
+                ),
+                child: _MemberRow(
+                  userId: participantId,
+                  index: index,
+                  isOrganizer: isOrganizer,
+                  badgeText: isOrganizer ? '벙주' : null,
+                  badgeColor: Colors.orange,
                 ),
               );
             }),
@@ -140,42 +112,96 @@ class MembersCard extends StatelessWidget {
               final waitingId = entry.value;
 
               return Padding(
-                padding: EdgeInsets.only(bottom: index < event.waitingIds.length - 1 ? 8 : 0),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 16,
-                      backgroundColor: Colors.orange,
-                      child: Text(
-                        '${index + 1}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    const Gap(12),
-                    Expanded(
-                      child: Text(
-                        waitingId, // Displaying ID as requested
-                        style: const TextStyle(fontSize: 14),
-                      ),
-                    ),
-                    const Text(
-                      '대기중',
-                      style: TextStyle(
-                        color: Colors.orange,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
+                padding: EdgeInsets.only(
+                  bottom: index < event.waitingIds.length - 1 ? 8 : 0,
+                ),
+                child: _MemberRow(
+                  userId: waitingId,
+                  index: index,
+                  isOrganizer: false,
+                  badgeText: '대기중',
+                  badgeColor: Colors.orange,
                 ),
               );
             }),
           ],
         ],
       ),
+    );
+  }
+}
+
+/// 개별 멤버 행 - 닉네임을 가져와서 표시
+class _MemberRow extends ConsumerWidget {
+  const _MemberRow({
+    required this.userId,
+    required this.index,
+    required this.isOrganizer,
+    this.badgeText,
+    this.badgeColor,
+  });
+
+  final String userId;
+  final int index;
+  final bool isOrganizer;
+  final String? badgeText;
+  final Color? badgeColor;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userAsync = ref.watch(userProvider(userId));
+
+    return Row(
+      children: [
+        CircleAvatar(
+          radius: 16,
+          backgroundColor: isOrganizer ? Colors.orange : Colors.blue,
+          child: Text(
+            '${index + 1}',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        const Gap(12),
+        Expanded(
+          child: userAsync.when(
+            data: (user) => Text(
+              user.displayNameOrNickname,
+              style: const TextStyle(fontSize: 14),
+            ),
+            loading: () => const Text(
+              '로딩중...',
+              style: TextStyle(fontSize: 14, color: Colors.grey),
+            ),
+            error: (error, stack) {
+              debugPrint('Failed to load user $userId: $error');
+              return const Text(
+                '알 수 없는 사용자',
+                style: TextStyle(fontSize: 14, color: Colors.grey),
+              );
+            },
+          ),
+        ),
+        if (badgeText != null && badgeColor != null)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: badgeColor!.withValues(alpha: .1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              badgeText!,
+              style: TextStyle(
+                color: badgeColor,
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

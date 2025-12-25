@@ -5,3 +5,5 @@ import 'package:our_bung_play/presentation/pages/event_list/enums/event_list_enu
 final eventListSortOptionProvider = StateProvider.autoDispose((_) => EventSortOption.dateAsc);
 final eventListStatusFiltersProvider = StateProvider.autoDispose<Set<EventStatus>>((_) => {});
 final eventListSearchQueryProvider = StateProvider.autoDispose((_) => '');
+final eventListQuickFilterProvider = StateProvider.autoDispose((_) => QuickFilter.all);
+

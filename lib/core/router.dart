@@ -210,11 +210,15 @@ class AppRouter {
       final loggingIn = state.matchedLocation == AppRoutePath.login.relativePath;
       final goingToAuthWrapper = state.matchedLocation == AppRoutePath.authWrapper.relativePath;
 
+      // 로그인되지 않은 경우, 로그인 페이지 또는 AuthWrapper로 가지 않으면 로그인으로 리디렉트
       if (!loggedIn && !loggingIn && !goingToAuthWrapper) {
         return AppRoutePath.login.relativePath;
       }
-      if (loggedIn && (loggingIn || goingToAuthWrapper)) {
-        return AppRoutePath.mainNavigation.relativePath;
+      
+      // 로그인된 상태에서 로그인 페이지로 가면 AuthWrapper로 리디렉트
+      // AuthWrapper에서 닉네임 체크 후 적절한 화면으로 이동
+      if (loggedIn && loggingIn) {
+        return AppRoutePath.authWrapper.relativePath;
       }
 
       return null;

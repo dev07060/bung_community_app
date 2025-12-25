@@ -15,7 +15,10 @@ class UserRepositoryImpl implements UserRepository {
       if (!doc.exists) {
         throw const NotFoundException('User not found');
       }
-      return UserEntity.fromJson(doc.data()!);
+      // 문서 ID를 id 필드로 사용
+      final data = doc.data()!;
+      data['id'] = doc.id;
+      return UserEntity.fromJson(data);
     } catch (e) {
       if (e is AppException) rethrow;
       throw ServerException('Failed to fetch user: ${e.toString()}');

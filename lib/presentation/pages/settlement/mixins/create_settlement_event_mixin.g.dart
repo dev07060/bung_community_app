@@ -7,7 +7,7 @@ part of 'create_settlement_event_mixin.dart';
 // **************************************************************************
 
 String _$createSettlementEventHash() =>
-    r'abc3317944f01bf560e65dec58cf96109695fe4b';
+    r'c2ce76d463531eab2c1c7f50539acc2653872ee3';
 
 /// See also [CreateSettlementEvent].
 @ProviderFor(CreateSettlementEvent)

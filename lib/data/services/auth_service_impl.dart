@@ -251,4 +251,39 @@ class AuthServiceImpl implements AuthRepository {
         return '인증 중 오류가 발생했습니다: $errorCode';
     }
   }
+
+  @override
+  Future<UserEntity?> updateProfile({String? nickname, String? photoURL}) async {
+    try {
+      final firebaseUser = _firebaseAuth.currentUser;
+      if (firebaseUser == null) {
+        throw const AuthException('로그인이 필요합니다.');
+      }
+
+      final updates = <String, dynamic>{};
+      if (nickname != null) {
+        updates['nickname'] = nickname;
+      }
+      if (photoURL != null) {
+        updates['photoURL'] = photoURL;
+      }
+
+      if (updates.isEmpty) {
+        return await _getUserFromFirestore(firebaseUser.uid);
+      }
+
+      await _firestore
+          .collection(AppConstants.usersCollection)
+          .doc(firebaseUser.uid)
+          .update(updates);
+
+      Logger.info('Profile updated for user: ${firebaseUser.uid}');
+      return await _getUserFromFirestore(firebaseUser.uid);
+    } catch (e, stackTrace) {
+      Logger.error('Error updating profile', e, stackTrace);
+      if (e is AuthException) rethrow;
+      throw AuthException('프로필 업데이트 중 오류가 발생했습니다: ${e.toString()}');
+    }
+  }
 }
+

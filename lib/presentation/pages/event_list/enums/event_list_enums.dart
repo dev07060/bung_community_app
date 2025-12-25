@@ -10,3 +10,15 @@ enum EventSortOption {
   const EventSortOption(this.displayName);
   final String displayName;
 }
+
+/// 빠른 필터 옵션
+enum QuickFilter {
+  all('전체'),
+  joinable('참여 가능'),
+  closed('마감'),
+  today('오늘 등록');
+
+  const QuickFilter(this.displayName);
+  final String displayName;
+}
+

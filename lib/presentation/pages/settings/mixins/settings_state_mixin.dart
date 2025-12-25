@@ -39,7 +39,8 @@ mixin SettingsStateMixin {
   Map<String, String?> getUserProfile(WidgetRef ref) {
     final user = getCurrentUser(ref);
     return {
-      'displayName': user?.displayName ?? '사용자',
+      'displayName': user?.displayNameOrNickname ?? '사용자',
+      'nickname': user?.nickname,
       'email': user?.email ?? 'user@example.com',
       'photoURL': user?.photoURL,
     };

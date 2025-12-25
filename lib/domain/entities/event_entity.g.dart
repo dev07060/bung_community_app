@@ -51,6 +51,7 @@ const _$EventStatusEnumMap = {
   EventStatus.scheduled: 'scheduled',
   EventStatus.closed: 'closed',
   EventStatus.ongoing: 'ongoing',
+  EventStatus.settlement: 'settlement',
   EventStatus.completed: 'completed',
   EventStatus.cancelled: 'cancelled',
 };

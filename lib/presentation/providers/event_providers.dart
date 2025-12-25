@@ -1,19 +1,46 @@
 import 'package:our_bung_play/core/enums/app_enums.dart';
 import 'package:our_bung_play/core/exceptions/app_exceptions.dart';
 import 'package:our_bung_play/core/utils/logger.dart';
+import 'package:our_bung_play/data/repositories/event_participation_repository_impl.dart';
 import 'package:our_bung_play/data/repositories/event_repository_impl.dart';
+import 'package:our_bung_play/data/repositories/event_status_repository_impl.dart';
 import 'package:our_bung_play/domain/entities/event_entity.dart';
+import 'package:our_bung_play/domain/repositories/event_participation_repository.dart';
 import 'package:our_bung_play/domain/repositories/event_repository.dart';
+import 'package:our_bung_play/domain/repositories/event_status_repository.dart';
 import 'package:our_bung_play/presentation/providers/auth_providers.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'event_providers.g.dart';
 
-// Event Repository Provider
+// === Repository Providers ===
+
+/// Event CRUD Repository Provider
 @riverpod
 EventRepository eventRepository(EventRepositoryRef ref) {
   final authRepository = ref.watch(authRepositoryProvider);
   return EventRepositoryImpl(authRepository: authRepository);
+}
+
+/// Event Participation Repository Provider (참여/대기/나가기)
+@riverpod
+EventParticipationRepository eventParticipationRepository(
+  EventParticipationRepositoryRef ref,
+) {
+  final authRepository = ref.watch(authRepositoryProvider);
+  return EventParticipationRepositoryImpl(authRepository: authRepository);
+}
+
+/// Event Status Repository Provider (상태 관리)
+@riverpod
+EventStatusRepository eventStatusRepository(EventStatusRepositoryRef ref) {
+  final authRepository = ref.watch(authRepositoryProvider);
+  final repository = EventStatusRepositoryImpl(authRepository: authRepository);
+  // 자동 상태 업데이트 시작
+  repository.startAutoStatusUpdate();
+  // dispose 시 정리
+  ref.onDispose(() => repository.dispose());
+  return repository;
 }
 
 // Channel Events Provider - 특정 채널의 벙 목록
@@ -216,7 +243,7 @@ class EventParticipation extends _$EventParticipation {
         throw const AuthException('로그인이 필요합니다.');
       }
 
-      final repository = ref.read(eventRepositoryProvider);
+      final repository = ref.read(eventParticipationRepositoryProvider);
       await repository.joinEvent(eventId, currentUser.id);
 
       Logger.info('Successfully joined event: $eventId');
@@ -243,7 +270,7 @@ class EventParticipation extends _$EventParticipation {
         throw const AuthException('로그인이 필요합니다.');
       }
 
-      final repository = ref.read(eventRepositoryProvider);
+      final repository = ref.read(eventParticipationRepositoryProvider);
       await repository.leaveEvent(eventId, currentUser.id);
 
       Logger.info('Successfully left event: $eventId');
@@ -270,7 +297,7 @@ class EventParticipation extends _$EventParticipation {
         throw const AuthException('로그인이 필요합니다.');
       }
 
-      final repository = ref.read(eventRepositoryProvider);
+      final repository = ref.read(eventParticipationRepositoryProvider);
       await repository.joinWaitingList(eventId, currentUser.id);
 
       Logger.info('Successfully joined waiting list for event: $eventId');
@@ -312,7 +339,7 @@ class EventManagement extends _$EventManagement {
     state = const AsyncValue.loading();
 
     try {
-      final repository = ref.read(eventRepositoryProvider);
+      final repository = ref.read(eventStatusRepositoryProvider);
       await repository.updateEventStatus(eventId, status);
 
       Logger.info('Event status updated: $eventId to ${status.name}');

@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:our_bung_play/core/constants/app_constants.dart';
+import 'package:our_bung_play/core/utils/logger.dart';
 import 'package:our_bung_play/presentation/mixins/auth_state_mixin.dart';
 import 'package:our_bung_play/presentation/pages/auth/login_page.dart';
+import 'package:our_bung_play/presentation/pages/auth/profile_setup_page.dart';
 import 'package:our_bung_play/presentation/pages/channel/no_channel_page.dart';
 import 'package:our_bung_play/presentation/pages/main/main_navigation_page.dart';
 import 'package:our_bung_play/presentation/providers/channel_providers.dart';
@@ -18,10 +20,16 @@ class AuthWrapper extends ConsumerWidget with AuthStateMixin {
 
     return authState.when(
       // 로딩 중일 때 스플래시 화면 표시
-      loading: () => const _SplashScreen(),
+      loading: () {
+        Logger.info('AuthWrapper - authState is loading...');
+        return const _SplashScreen();
+      },
 
       // 에러 발생 시 로그인 화면으로 이동
-      error: (error, stackTrace) => const LoginPage(),
+      error: (error, stackTrace) {
+        Logger.error('AuthWrapper - authState error', error, stackTrace);
+        return const LoginPage();
+      },
 
       // 데이터가 있을 때 사용자 상태에 따라 분기
       data: (user) {
@@ -30,9 +38,20 @@ class AuthWrapper extends ConsumerWidget with AuthStateMixin {
           return const LoginPage();
         }
 
+        // 디버그 로그
+        Logger.info('AuthWrapper - user: ${user.id}');
+        Logger.info('AuthWrapper - nickname: ${user.nickname}');
+        Logger.info('AuthWrapper - hasNickname: ${user.hasNickname}');
+
         if (!user.isActive) {
           // 사용자가 비활성 상태인 경우 제한 화면
           return const _UserRestrictedScreen();
+        }
+
+        // 닉네임 미설정 시 프로필 설정 화면
+        if (!user.hasNickname) {
+          Logger.info('AuthWrapper - Redirecting to ProfileSetupPage');
+          return const ProfileSetupPage();
         }
 
         // 채널 정보 확인
@@ -51,6 +70,8 @@ class AuthWrapper extends ConsumerWidget with AuthStateMixin {
     );
   }
 }
+
+
 
 /// 스플래시 화면
 class _SplashScreen extends StatelessWidget {

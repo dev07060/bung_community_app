@@ -24,12 +24,13 @@ mixin _$UserEntity {
   String get uuid => throw _privateConstructorUsedError; // 앱 내부 UUID
   String get email => throw _privateConstructorUsedError;
   String get displayName => throw _privateConstructorUsedError;
+  String? get nickname => throw _privateConstructorUsedError; // 사용자 지정 닉네임
   String? get photoURL => throw _privateConstructorUsedError;
   List<String> get channelIds => throw _privateConstructorUsedError;
   UserRole get role => throw _privateConstructorUsedError;
   UserStatus get status => throw _privateConstructorUsedError;
-  DateTime get createdAt => throw _privateConstructorUsedError;
-  DateTime get lastLoginAt => throw _privateConstructorUsedError;
+  DateTime? get createdAt => throw _privateConstructorUsedError;
+  DateTime? get lastLoginAt => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -48,12 +49,13 @@ abstract class $UserEntityCopyWith<$Res> {
       String uuid,
       String email,
       String displayName,
+      String? nickname,
       String? photoURL,
       List<String> channelIds,
       UserRole role,
       UserStatus status,
-      DateTime createdAt,
-      DateTime lastLoginAt});
+      DateTime? createdAt,
+      DateTime? lastLoginAt});
 }
 
 /// @nodoc
@@ -73,12 +75,13 @@ class _$UserEntityCopyWithImpl<$Res, $Val extends UserEntity>
     Object? uuid = null,
     Object? email = null,
     Object? displayName = null,
+    Object? nickname = freezed,
     Object? photoURL = freezed,
     Object? channelIds = null,
     Object? role = null,
     Object? status = null,
-    Object? createdAt = null,
-    Object? lastLoginAt = null,
+    Object? createdAt = freezed,
+    Object? lastLoginAt = freezed,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -97,6 +100,10 @@ class _$UserEntityCopyWithImpl<$Res, $Val extends UserEntity>
           ? _value.displayName
           : displayName // ignore: cast_nullable_to_non_nullable
               as String,
+      nickname: freezed == nickname
+          ? _value.nickname
+          : nickname // ignore: cast_nullable_to_non_nullable
+              as String?,
       photoURL: freezed == photoURL
           ? _value.photoURL
           : photoURL // ignore: cast_nullable_to_non_nullable
@@ -113,14 +120,14 @@ class _$UserEntityCopyWithImpl<$Res, $Val extends UserEntity>
           ? _value.status
           : status // ignore: cast_nullable_to_non_nullable
               as UserStatus,
-      createdAt: null == createdAt
+      createdAt: freezed == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-      lastLoginAt: null == lastLoginAt
+              as DateTime?,
+      lastLoginAt: freezed == lastLoginAt
           ? _value.lastLoginAt
           : lastLoginAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
+              as DateTime?,
     ) as $Val);
   }
 }
@@ -138,12 +145,13 @@ abstract class _$$UserEntityImplCopyWith<$Res>
       String uuid,
       String email,
       String displayName,
+      String? nickname,
       String? photoURL,
       List<String> channelIds,
       UserRole role,
       UserStatus status,
-      DateTime createdAt,
-      DateTime lastLoginAt});
+      DateTime? createdAt,
+      DateTime? lastLoginAt});
 }
 
 /// @nodoc
@@ -161,12 +169,13 @@ class __$$UserEntityImplCopyWithImpl<$Res>
     Object? uuid = null,
     Object? email = null,
     Object? displayName = null,
+    Object? nickname = freezed,
     Object? photoURL = freezed,
     Object? channelIds = null,
     Object? role = null,
     Object? status = null,
-    Object? createdAt = null,
-    Object? lastLoginAt = null,
+    Object? createdAt = freezed,
+    Object? lastLoginAt = freezed,
   }) {
     return _then(_$UserEntityImpl(
       id: null == id
@@ -185,6 +194,10 @@ class __$$UserEntityImplCopyWithImpl<$Res>
           ? _value.displayName
           : displayName // ignore: cast_nullable_to_non_nullable
               as String,
+      nickname: freezed == nickname
+          ? _value.nickname
+          : nickname // ignore: cast_nullable_to_non_nullable
+              as String?,
       photoURL: freezed == photoURL
           ? _value.photoURL
           : photoURL // ignore: cast_nullable_to_non_nullable
@@ -201,14 +214,14 @@ class __$$UserEntityImplCopyWithImpl<$Res>
           ? _value.status
           : status // ignore: cast_nullable_to_non_nullable
               as UserStatus,
-      createdAt: null == createdAt
+      createdAt: freezed == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-      lastLoginAt: null == lastLoginAt
+              as DateTime?,
+      lastLoginAt: freezed == lastLoginAt
           ? _value.lastLoginAt
           : lastLoginAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
+              as DateTime?,
     ));
   }
 }
@@ -218,15 +231,16 @@ class __$$UserEntityImplCopyWithImpl<$Res>
 class _$UserEntityImpl extends _UserEntity {
   const _$UserEntityImpl(
       {required this.id,
-      required this.uuid,
-      required this.email,
-      required this.displayName,
+      this.uuid = '',
+      this.email = '',
+      this.displayName = '',
+      this.nickname,
       this.photoURL,
       final List<String> channelIds = const [],
       this.role = UserRole.member,
       this.status = UserStatus.active,
-      required this.createdAt,
-      required this.lastLoginAt})
+      this.createdAt,
+      this.lastLoginAt})
       : _channelIds = channelIds,
         super._();
 
@@ -237,12 +251,18 @@ class _$UserEntityImpl extends _UserEntity {
   final String id;
 // Firebase Auth UID
   @override
+  @JsonKey()
   final String uuid;
 // 앱 내부 UUID
   @override
+  @JsonKey()
   final String email;
   @override
+  @JsonKey()
   final String displayName;
+  @override
+  final String? nickname;
+// 사용자 지정 닉네임
   @override
   final String? photoURL;
   final List<String> _channelIds;
@@ -261,13 +281,13 @@ class _$UserEntityImpl extends _UserEntity {
   @JsonKey()
   final UserStatus status;
   @override
-  final DateTime createdAt;
+  final DateTime? createdAt;
   @override
-  final DateTime lastLoginAt;
+  final DateTime? lastLoginAt;
 
   @override
   String toString() {
-    return 'UserEntity(id: $id, uuid: $uuid, email: $email, displayName: $displayName, photoURL: $photoURL, channelIds: $channelIds, role: $role, status: $status, createdAt: $createdAt, lastLoginAt: $lastLoginAt)';
+    return 'UserEntity(id: $id, uuid: $uuid, email: $email, displayName: $displayName, nickname: $nickname, photoURL: $photoURL, channelIds: $channelIds, role: $role, status: $status, createdAt: $createdAt, lastLoginAt: $lastLoginAt)';
   }
 
   @override
@@ -280,6 +300,8 @@ class _$UserEntityImpl extends _UserEntity {
             (identical(other.email, email) || other.email == email) &&
             (identical(other.displayName, displayName) ||
                 other.displayName == displayName) &&
+            (identical(other.nickname, nickname) ||
+                other.nickname == nickname) &&
             (identical(other.photoURL, photoURL) ||
                 other.photoURL == photoURL) &&
             const DeepCollectionEquality()
@@ -300,6 +322,7 @@ class _$UserEntityImpl extends _UserEntity {
       uuid,
       email,
       displayName,
+      nickname,
       photoURL,
       const DeepCollectionEquality().hash(_channelIds),
       role,
@@ -324,15 +347,16 @@ class _$UserEntityImpl extends _UserEntity {
 abstract class _UserEntity extends UserEntity {
   const factory _UserEntity(
       {required final String id,
-      required final String uuid,
-      required final String email,
-      required final String displayName,
+      final String uuid,
+      final String email,
+      final String displayName,
+      final String? nickname,
       final String? photoURL,
       final List<String> channelIds,
       final UserRole role,
       final UserStatus status,
-      required final DateTime createdAt,
-      required final DateTime lastLoginAt}) = _$UserEntityImpl;
+      final DateTime? createdAt,
+      final DateTime? lastLoginAt}) = _$UserEntityImpl;
   const _UserEntity._() : super._();
 
   factory _UserEntity.fromJson(Map<String, dynamic> json) =
@@ -347,6 +371,8 @@ abstract class _UserEntity extends UserEntity {
   @override
   String get displayName;
   @override
+  String? get nickname;
+  @override // 사용자 지정 닉네임
   String? get photoURL;
   @override
   List<String> get channelIds;
@@ -355,9 +381,9 @@ abstract class _UserEntity extends UserEntity {
   @override
   UserStatus get status;
   @override
-  DateTime get createdAt;
+  DateTime? get createdAt;
   @override
-  DateTime get lastLoginAt;
+  DateTime? get lastLoginAt;
   @override
   @JsonKey(ignore: true)
   _$$UserEntityImplCopyWith<_$UserEntityImpl> get copyWith =>

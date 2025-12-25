@@ -8,7 +8,9 @@ part of 'event_providers.dart';
 
 String _$eventRepositoryHash() => r'f747e9ab95947d9411b37d4fe4bb536067273439';
 
-/// See also [eventRepository].
+/// Event CRUD Repository Provider
+///
+/// Copied from [eventRepository].
 @ProviderFor(eventRepository)
 final eventRepositoryProvider = AutoDisposeProvider<EventRepository>.internal(
   eventRepository,
@@ -21,6 +23,46 @@ final eventRepositoryProvider = AutoDisposeProvider<EventRepository>.internal(
 );
 
 typedef EventRepositoryRef = AutoDisposeProviderRef<EventRepository>;
+String _$eventParticipationRepositoryHash() =>
+    r'9c972a4520684def6a66e64d25ce9dc34480a898';
+
+/// Event Participation Repository Provider (참여/대기/나가기)
+///
+/// Copied from [eventParticipationRepository].
+@ProviderFor(eventParticipationRepository)
+final eventParticipationRepositoryProvider =
+    AutoDisposeProvider<EventParticipationRepository>.internal(
+  eventParticipationRepository,
+  name: r'eventParticipationRepositoryProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$eventParticipationRepositoryHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef EventParticipationRepositoryRef
+    = AutoDisposeProviderRef<EventParticipationRepository>;
+String _$eventStatusRepositoryHash() =>
+    r'5fc5793de837a175913661513cf04429ee7e0103';
+
+/// Event Status Repository Provider (상태 관리)
+///
+/// Copied from [eventStatusRepository].
+@ProviderFor(eventStatusRepository)
+final eventStatusRepositoryProvider =
+    AutoDisposeProvider<EventStatusRepository>.internal(
+  eventStatusRepository,
+  name: r'eventStatusRepositoryProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$eventStatusRepositoryHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef EventStatusRepositoryRef
+    = AutoDisposeProviderRef<EventStatusRepository>;
 String _$channelEventsStreamHash() =>
     r'5b63f4592bbf03fbaa848a985936afa0be53ecc2';
 
@@ -522,7 +564,7 @@ final eventCreationProvider = AutoDisposeNotifierProvider<EventCreation,
 
 typedef _$EventCreation = AutoDisposeNotifier<AsyncValue<EventEntity?>>;
 String _$eventParticipationHash() =>
-    r'dd88f3ea35f17d4517f77dc2eef68563d1b60cce';
+    r'282e0987ac1141a5b41940183673067ab0692d80';
 
 /// See also [EventParticipation].
 @ProviderFor(EventParticipation)
@@ -538,7 +580,7 @@ final eventParticipationProvider =
 );
 
 typedef _$EventParticipation = AutoDisposeNotifier<AsyncValue<bool>>;
-String _$eventManagementHash() => r'1969a6a4255912c47b9b6c0eb7a7a48e1a54591e';
+String _$eventManagementHash() => r'43c0a449ac03f3513aecd6be6de3ea9b4e558ba9';
 
 /// See also [EventManagement].
 @ProviderFor(EventManagement)

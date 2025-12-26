@@ -4,6 +4,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:our_bung_play/presentation/providers/channel_providers.dart';
+import 'package:our_bung_play/shared/components/f_dialog.dart';
 
 import '../../base/base_page.dart';
 
@@ -512,18 +513,11 @@ class _CreateChannelView extends HookConsumerWidget {
   }
 
   void _showErrorDialog(BuildContext context, String message) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('오류'),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('확인'),
-          ),
-        ],
-      ),
-    );
+    FDialog.oneButton(
+      title: '오류',
+      description: message,
+      confirmText: '확인',
+      onConfirm: () {},
+    ).show(context);
   }
 }

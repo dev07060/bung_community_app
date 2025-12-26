@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:our_bung_play/core/enums/app_enums.dart';
 import 'package:our_bung_play/domain/entities/event_entity.dart';
 import 'package:our_bung_play/presentation/pages/event/mixins/event_event_mixin.dart';
 import 'package:our_bung_play/presentation/pages/event/mixins/event_state_mixin.dart';
 import 'package:our_bung_play/presentation/pages/event_detail/mixins/event_detail_event_mixin.dart';
-import 'package:our_bung_play/presentation/providers/settlement_providers.dart' as EventStatus;
 import 'package:our_bung_play/presentation/providers/settlement_providers.dart';
 import 'package:our_bung_play/shared/components/f_dialog.dart';
 import 'package:our_bung_play/shared/components/f_solid_button.dart';
@@ -27,14 +27,15 @@ class ActionButtons extends ConsumerWidget with EventStateMixin, EventEventMixin
     final isOrganizer = event.isOrganizer(currentUserId);
 
     if (isOrganizer) {
-      if (event.isOngoing || event.status == EventStatus.settlement) {
+      if (event.isOngoing || event.computedStatus == EventStatus.settlement) {
         if (!event.requiresSettlement) {
           return _buildCompleteEventButton(context, ref);
         } else {
           final settlementAsync = ref.watch(eventSettlementProvider(event.id));
           return settlementAsync.when(
             data: (settlement) {
-              if (settlement != null && settlement.allPaymentsCompleted) {
+              // 정산이 완료된 경우에만 벙 완료 버튼 표시
+              if (settlement != null && settlement.isCompleted) {
                 return _buildCompleteEventButton(context, ref);
               }
               return const SizedBox.shrink();
@@ -46,12 +47,15 @@ class ActionButtons extends ConsumerWidget with EventStateMixin, EventEventMixin
       }
       return const SizedBox.shrink();
     } else {
+      // 완료됨 상태에서는 참여상태 변경 불가
+      final isCompleted = event.computedStatus == EventStatus.completed;
       return SizedBox(
         width: double.infinity,
         child: FSolidButton.primary(
-          text: '참여상태 변경',
-          onPressed:
-              isParticipationLoading ? null : () => _showParticipationStatusDialog(context, ref, event, currentUserId),
+          text: isCompleted ? '완료된 벙' : '참여상태 변경',
+          onPressed: isCompleted || isParticipationLoading
+              ? null
+              : () => _showParticipationStatusDialog(context, ref, event, currentUserId),
         ),
       );
     }
@@ -109,7 +113,7 @@ class ActionButtons extends ConsumerWidget with EventStateMixin, EventEventMixin
   }
 
   void _handleParticipantUser(BuildContext context, WidgetRef ref, EventEntity event) {
-    if (event.status == EventStatus.settlement) {
+    if (event.computedStatus == EventStatus.settlement) {
       FDialog.oneButton(
         title: '참여 취소 불가',
         description: '정산이 진행 중인 벙은 참여를 취소할 수 없습니다.',

@@ -17,27 +17,22 @@ class EventInfoCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildInfoRow(Icons.schedule, '일시', _formatDateTime(event.scheduledAt)),
+          _buildInfoRow(Icons.schedule, _formatDateTime(event.scheduledAt)),
           const Gap(8),
-          _buildInfoRow(Icons.location_on, '장소', event.location),
+          _buildInfoRow(Icons.location_on, event.location),
           const Gap(8),
-          _buildInfoRow(Icons.people, '인원', event.participationInfo),
-          if (event.requiresSettlement) ...[const Gap(8), _buildInfoRow(Icons.account_balance_wallet, '정산', '정산 필요')],
+          _buildInfoRow(Icons.people, event.participationInfo),
+          if (event.requiresSettlement) ...[const Gap(8), _buildInfoRow(Icons.account_balance_wallet, '정산 필요')],
         ],
       ),
     );
   }
 
-  Widget _buildInfoRow(IconData icon, String label, String value) {
+  Widget _buildInfoRow(IconData icon, String value) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Icon(icon, size: 20, color: Colors.grey[600]),
-        const Gap(12),
-        Text(
-          '$label:',
-          style: const TextStyle(fontWeight: FontWeight.w500, color: Colors.grey),
-        ),
         const Gap(8),
         Expanded(
           child: Text(value, style: const TextStyle(fontWeight: FontWeight.w500)),

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -8,6 +10,7 @@ import 'package:our_bung_play/presentation/pages/settings/member_management_page
 import 'package:our_bung_play/presentation/pages/settings/rule_management_page.dart';
 import 'package:our_bung_play/presentation/providers/auth_providers.dart';
 import 'package:our_bung_play/presentation/providers/settings_providers.dart';
+import 'package:our_bung_play/shared/components/f_dialog.dart';
 
 /// 설정 화면 이벤트 처리 Mixin
 mixin SettingsEventMixin {
@@ -247,67 +250,42 @@ mixin SettingsEventMixin {
   }
 
   Future<bool> _showLogoutConfirmDialog(BuildContext context) async {
-    return await showDialog<bool>(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('로그아웃'),
-            content: const Text('정말 로그아웃하시겠습니까?'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('취소'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                child: const Text('로그아웃'),
-              ),
-            ],
-          ),
-        ) ??
-        false;
+    final completer = Completer<bool>();
+    FDialog.twoButton(
+      context,
+      title: '로그아웃',
+      description: '정말 로그아웃하시겠습니까?',
+      confirmText: '로그아웃',
+      onConfirm: () => completer.complete(true),
+      onCancel: () => completer.complete(false),
+    ).show(context);
+    return completer.future;
   }
 
   Future<bool> _showDeleteAccountConfirmDialog(BuildContext context) async {
-    return await showDialog<bool>(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('회원 탈퇴'),
-            content: const Text('정말 회원 탈퇴하시겠습니까?\n이 작업은 되돌릴 수 없습니다.'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('취소'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                style: TextButton.styleFrom(foregroundColor: Colors.red),
-                child: const Text('탈퇴'),
-              ),
-            ],
-          ),
-        ) ??
-        false;
+    final completer = Completer<bool>();
+    FDialog.twoButton(
+      context,
+      title: '회원 탈퇴',
+      description: '정말 회원 탈퇴하시겠습니까?\n이 작업은 되돌릴 수 없습니다.',
+      confirmText: '탈퇴',
+      onConfirm: () => completer.complete(true),
+      onCancel: () => completer.complete(false),
+    ).show(context);
+    return completer.future;
   }
 
   Future<bool> _showInviteLinkConfirmDialog(BuildContext context) async {
-    return await showDialog<bool>(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('초대 링크 재생성'),
-            content: const Text('새로운 초대 링크를 생성하시겠습니까?\n기존 링크는 사용할 수 없게 됩니다.'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('취소'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                child: const Text('생성'),
-              ),
-            ],
-          ),
-        ) ??
-        false;
+    final completer = Completer<bool>();
+    FDialog.twoButton(
+      context,
+      title: '초대 링크 재생성',
+      description: '새로운 초대 링크를 생성하시겠습니까?\n기존 링크는 사용할 수 없게 됩니다.',
+      confirmText: '생성',
+      onConfirm: () => completer.complete(true),
+      onCancel: () => completer.complete(false),
+    ).show(context);
+    return completer.future;
   }
 
   Future<void> _showInviteLinkDialog(BuildContext context, String link) async {

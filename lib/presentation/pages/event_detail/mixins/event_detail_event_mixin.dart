@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:our_bung_play/core/utils/logger.dart';
 import 'package:our_bung_play/presentation/providers/event_providers.dart';
+import 'package:our_bung_play/shared/components/f_dialog.dart';
 
 // TODO: remove this file
 /// 벙 상세 화면 관련 이벤트를 처리하는 Mixin Class
@@ -431,28 +434,15 @@ mixin class EventDetailEventMixin {
     String title,
     String content,
   ) async {
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(title),
-        content: Text(content),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('취소'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.red,
-            ),
-            child: const Text('확인'),
-          ),
-        ],
-      ),
-    );
-
-    return result ?? false;
+    final completer = Completer<bool>();
+    FDialog.twoButton(
+      context,
+      title: title,
+      description: content,
+      onConfirm: () => completer.complete(true),
+      onCancel: () => completer.complete(false),
+    ).show(context);
+    return completer.future;
   }
 
   String _formatDateTime(DateTime dateTime) {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:our_bung_play/core/enums/app_enums.dart';
 import 'package:our_bung_play/domain/entities/event_entity.dart';
 import 'package:our_bung_play/presentation/pages/home/mixins/home_event_mixin.dart';
 import 'package:our_bung_play/presentation/pages/home/mixins/home_state_mixin.dart';
@@ -19,6 +20,7 @@ class HomeView extends ConsumerWidget with HomeStateMixin, HomeEventMixin {
     final myParticipatingEventsAsync = getMyParticipatingEvents(ref);
     final myOrganizedEventsAsync = getMyOrganizedEvents(ref);
     final errorMessage = getErrorMessage(ref);
+    final selectedTab = ref.watch(homeSelectedTabProvider);
 
     if (errorMessage != null) {
       return _buildErrorState(context, errorMessage, () => onRefresh(ref));
@@ -29,124 +31,146 @@ class HomeView extends ConsumerWidget with HomeStateMixin, HomeEventMixin {
       child: CustomScrollView(
         slivers: [
           const SliverToBoxAdapter(child: Gap(20)),
-          SliverToBoxAdapter(child: _buildSectionHeader(context, '내가 참여할 벙')),
-          _buildEventList(context, ref, myParticipatingEventsAsync, isOrganizer: false),
-          SliverToBoxAdapter(child: _buildSectionHeaderWithFilter(context, '내가 개설한 벙')),
-          _buildFilteredOrganizedEventList(context, ref, myOrganizedEventsAsync),
+          // 탭 선택 헤더
+          SliverToBoxAdapter(child: _buildTabSelector(context, ref, selectedTab)),
+          const SliverToBoxAdapter(child: Gap(18)),
+          // 공용 필터 칩
+          const SliverToBoxAdapter(child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20),
+            child: _FilterChipGroup(),
+          )),
+          const SliverToBoxAdapter(child: Gap(8)),
+          // 선택된 탭에 따른 벙 목록
+          if (selectedTab == 0)
+            _buildFilteredEventList(context, ref, myOrganizedEventsAsync, isOrganizer: true)
+          else
+            _buildFilteredEventList(context, ref, myParticipatingEventsAsync, isOrganizer: false),
           const SliverToBoxAdapter(child: Gap(20)),
         ],
       ),
     );
   }
 
-  Widget _buildSectionHeader(BuildContext context, String title) {
+  Widget _buildTabSelector(BuildContext context, WidgetRef ref, int selectedTab) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      child: Text(
-        title,
-        style: FTextStyles.title2_20.copyWith(
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSectionHeaderWithFilter(BuildContext context, String title) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
+          _buildTabButton(
+            context, 
+            ref, 
+            '나의 벙', 
+            0, 
+            selectedTab == 0,
+          ),
           const Gap(16),
-          Text(title,
-              style: FTextStyles.title2_20.copyWith(
-                fontWeight: FontWeight.bold,
-              )),
-          const Gap(8),
-          const _FilterChipGroup(),
+          _buildTabButton(
+            context, 
+            ref, 
+            '참여한 벙', 
+            1, 
+            selectedTab == 1,
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildEventList(BuildContext context, WidgetRef ref, AsyncValue<List<EventEntity>> asyncEvents,
-      {required bool isOrganizer}) {
-    return asyncEvents.when(
-      data: (events) {
-        final channelEvents = events.where((event) => event.channelId == channelId).toList();
-        return channelEvents.isEmpty
-            ? SliverToBoxAdapter(child: _buildEmptyState('참여한 벙이 없습니다.'))
-            : SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) => EventListItem(event: channelEvents[index], isOrganizer: isOrganizer),
-                  childCount: channelEvents.length,
-                ),
-              );
+  Widget _buildTabButton(
+    BuildContext context,
+    WidgetRef ref,
+    String title,
+    int tabIndex,
+    bool isSelected,
+  ) {
+    return GestureDetector(
+      onTap: () {
+        ref.read(homeSelectedTabProvider.notifier).state = tabIndex;
+        // 탭 전환 시 필터 초기화
+        ref.read(homeEventsFilterProvider.notifier).state = 'all';
       },
-      loading: () => SliverToBoxAdapter(child: _buildLoadingState()),
-      error: (error, _) =>
-          SliverToBoxAdapter(child: _buildErrorState(context, '참여 벙 목록을 불러올 수 없습니다.', () => onRefresh(ref))),
+      child: Text(
+        title,
+        style: FTextStyles.title2_20.copyWith(
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          color: isSelected ? FColors.current.labelStrong : FColors.current.labelAssistive,
+        ),
+      ),
     );
   }
 
-  Widget _buildFilteredOrganizedEventList(
-      BuildContext context, WidgetRef ref, AsyncValue<List<EventEntity>> asyncEvents) {
+  Widget _buildFilteredEventList(
+    BuildContext context,
+    WidgetRef ref,
+    AsyncValue<List<EventEntity>> asyncEvents, {
+    required bool isOrganizer,
+  }) {
     return Consumer(
       builder: (context, ref, child) {
-        final filter = ref.watch(homeOrganizedEventsFilterProvider);
+        final filter = ref.watch(homeEventsFilterProvider);
         return asyncEvents.when(
           data: (events) {
-            final filteredEvents = _filterOrganizedEvents(events, filter, channelId);
+            final filteredEvents = _filterEvents(events, filter, channelId);
             return filteredEvents.isEmpty
-                ? SliverToBoxAdapter(child: _buildEmptyState(_getEmptyMessage(filter)))
+                ? SliverToBoxAdapter(child: _buildEmptyState(_getEmptyMessage(filter, isOrganizer)))
                 : SliverList(
                     delegate: SliverChildBuilderDelegate(
-                      (context, index) => EventListItem(event: filteredEvents[index], isOrganizer: true),
+                      (context, index) => EventListItem(event: filteredEvents[index], isOrganizer: isOrganizer),
                       childCount: filteredEvents.length,
                     ),
                   );
           },
           loading: () => SliverToBoxAdapter(child: _buildLoadingState()),
-          error: (error, _) =>
-              SliverToBoxAdapter(child: _buildErrorState(context, '개설 벙 목록을 불러올 수 없습니다.', () => onRefresh(ref))),
+          error: (error, _) => SliverToBoxAdapter(
+            child: _buildErrorState(
+              context,
+              isOrganizer ? '개설 벙 목록을 불러올 수 없습니다.' : '참여 벙 목록을 불러올 수 없습니다.',
+              () => onRefresh(ref),
+            ),
+          ),
         );
       },
     );
   }
 
-  List<EventEntity> _filterOrganizedEvents(List<EventEntity> events, String filter, String channelId) {
+  List<EventEntity> _filterEvents(List<EventEntity> events, String filter, String channelId) {
     final channelEvents = events.where((event) => event.channelId == channelId).toList();
     switch (filter) {
       case 'upcoming':
         return channelEvents
             .where((event) =>
-                event.status.toString() == 'EventStatus.scheduled' || event.status.toString() == 'EventStatus.closed')
+                event.computedStatus == EventStatus.scheduled || event.computedStatus == EventStatus.closed)
             .toList();
       case 'ongoing':
-        return channelEvents.where((event) => event.status.toString() == 'EventStatus.ongoing').toList();
+        return channelEvents.where((event) => event.computedStatus == EventStatus.ongoing).toList();
+      case 'settlement':
+        return channelEvents.where((event) => event.computedStatus == EventStatus.settlement).toList();
       case 'completed':
-        return channelEvents.where((event) => event.status.toString() == 'EventStatus.completed').toList();
+        return channelEvents.where((event) => event.computedStatus == EventStatus.completed).toList();
       case 'cancelled':
-        return channelEvents.where((event) => event.status.toString() == 'EventStatus.cancelled').toList();
+        return channelEvents.where((event) => event.computedStatus == EventStatus.cancelled).toList();
       case 'all':
       default:
         return channelEvents;
     }
   }
 
-  String _getEmptyMessage(String filter) {
+  String _getEmptyMessage(String filter, bool isOrganizer) {
+    final type = isOrganizer ? '개설한' : '참여한';
     switch (filter) {
       case 'upcoming':
         return '예정된 벙이 없습니다.';
       case 'ongoing':
         return '진행중인 벙이 없습니다.';
+      case 'settlement':
+        return '정산중인 벙이 없습니다.';
       case 'completed':
         return '완료된 벙이 없습니다.';
       case 'cancelled':
         return '취소된 벙이 없습니다.';
       case 'all':
       default:
-        return '개설한 벙이 없습니다.';
+        return '$type 벙이 없습니다.';
     }
   }
 
@@ -194,12 +218,13 @@ class _FilterChipGroup extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final currentFilter = ref.watch(homeOrganizedEventsFilterProvider);
+    final currentFilter = ref.watch(homeEventsFilterProvider);
 
     final List<Map<String, String>> filters = [
       {'value': 'all', 'label': '전체'},
       {'value': 'upcoming', 'label': '예정'},
       {'value': 'ongoing', 'label': '진행중'},
+      {'value': 'settlement', 'label': '정산중'},
       {'value': 'completed', 'label': '완료'},
       {'value': 'cancelled', 'label': '취소'},
     ];
@@ -224,7 +249,7 @@ class _FilterChipGroup extends ConsumerWidget {
       color: isSelected ? FColors.current.lightGreen.withValues(alpha: .6) : null,
       fontColor: isSelected ? FColors.current.inverseStrong : null,
       onTap: () {
-        ref.read(homeOrganizedEventsFilterProvider.notifier).state = value;
+        ref.read(homeEventsFilterProvider.notifier).state = value;
       },
     );
   }

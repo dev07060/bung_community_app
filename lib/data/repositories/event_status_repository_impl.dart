@@ -34,8 +34,13 @@ class EventStatusRepositoryImpl implements EventStatusRepository {
       final data = eventDoc.data() as Map<String, dynamic>;
       final organizerId = data['organizerId'] as String;
       final currentStatusName = data['status'] as String;
-      final currentStatus =
+      final storedStatus =
           EventStatus.values.firstWhere((s) => s.name == currentStatusName);
+      
+      // 시간 기반 상태 계산 (lazy evaluation)
+      final scheduledAtTimestamp = data['scheduledAt'] as Timestamp?;
+      final scheduledAt = scheduledAtTimestamp?.toDate();
+      final currentStatus = _computeEffectiveStatus(storedStatus, scheduledAt);
 
       if (organizerId != currentUser) {
         throw const PermissionException('벙 상태 변경 권한이 없습니다.');
@@ -51,6 +56,21 @@ class EventStatusRepositoryImpl implements EventStatusRepository {
       if (e is AppException) rethrow;
       throw ServerException('벙 상태 업데이트에 실패했습니다: ${e.toString()}');
     }
+  }
+  
+  /// 시간 기반 상태 계산 (lazy evaluation)
+  EventStatus _computeEffectiveStatus(EventStatus storedStatus, DateTime? scheduledAt) {
+    if (scheduledAt == null) return storedStatus;
+    
+    final now = DateTime.now();
+    
+    // scheduled/closed 상태이고 예정 시간이 지났으면 ongoing
+    if ((storedStatus == EventStatus.scheduled || storedStatus == EventStatus.closed) &&
+        now.isAfter(scheduledAt)) {
+      return EventStatus.ongoing;
+    }
+    
+    return storedStatus;
   }
 
   @override
@@ -80,9 +100,9 @@ class EventStatusRepositoryImpl implements EventStatusRepository {
     EventStatus newStatus,
   ) {
     final validTransitions = {
-      EventStatus.scheduled: [EventStatus.closed, EventStatus.cancelled],
-      EventStatus.closed: [EventStatus.scheduled, EventStatus.cancelled],
-      EventStatus.ongoing: [EventStatus.completed, EventStatus.cancelled],
+      EventStatus.scheduled: [EventStatus.closed, EventStatus.cancelled, EventStatus.ongoing],
+      EventStatus.closed: [EventStatus.scheduled, EventStatus.cancelled, EventStatus.ongoing],
+      EventStatus.ongoing: [EventStatus.completed, EventStatus.cancelled, EventStatus.settlement],
       EventStatus.settlement: [EventStatus.completed],
       EventStatus.completed: <EventStatus>[],
       EventStatus.cancelled: <EventStatus>[],

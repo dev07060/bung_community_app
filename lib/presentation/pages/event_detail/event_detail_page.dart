@@ -164,7 +164,7 @@ class _EventDetailContent extends HookConsumerWidget {
   }
 
   Widget _buildTitleAndStatus(BuildContext context, EventEntity event) {
-    final statusColor = getStatusColor(event.status);
+    final statusColor = getStatusColor(event.computedStatus);
 
     return Row(
       children: [

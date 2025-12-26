@@ -37,12 +37,37 @@ class EventEntity with _$EventEntity {
       maxParticipants > 0 &&
       scheduledAt.isAfter(DateTime.now());
 
-  // Status checks
-  bool get isScheduled => status == EventStatus.scheduled;
-  bool get isClosed => status == EventStatus.closed;
-  bool get isOngoing => status == EventStatus.ongoing;
-  bool get isCompleted => status == EventStatus.completed;
-  bool get isCancelled => status == EventStatus.cancelled;
+  /// 현재 시간 기준으로 계산된 상태 (Lazy Evaluation)
+  /// DB에 저장된 status는 주최자의 의도(예정/마감)를 보존하고,
+  /// 실제 표시는 시간 기반으로 자동 계산
+  EventStatus get computedStatus {
+    // 최종 상태(완료/취소)는 그대로 반환
+    if (status == EventStatus.completed || status == EventStatus.cancelled) {
+      return status;
+    }
+
+    // 정산 중 상태도 그대로 반환
+    if (status == EventStatus.settlement) {
+      return status;
+    }
+
+    final now = DateTime.now();
+
+    // 예정 시간이 지났으면 ongoing 표시
+    if (scheduledAt.isBefore(now)) {
+      return EventStatus.ongoing;
+    }
+
+    // 그 외는 저장된 상태 그대로
+    return status;
+  }
+
+  // Status checks (computedStatus 기반)
+  bool get isScheduled => computedStatus == EventStatus.scheduled;
+  bool get isClosed => computedStatus == EventStatus.closed;
+  bool get isOngoing => computedStatus == EventStatus.ongoing;
+  bool get isCompleted => computedStatus == EventStatus.completed;
+  bool get isCancelled => computedStatus == EventStatus.cancelled;
 
   // Participation checks
   bool get isFull => participantIds.length >= maxParticipants;
@@ -63,6 +88,6 @@ class EventEntity with _$EventEntity {
       scheduledAt.month == DateTime.now().month &&
       scheduledAt.day == DateTime.now().day;
 
-  String get displayStatus => status.displayName;
+  String get displayStatus => computedStatus.displayName;
   String get participationInfo => '$totalParticipants/$maxParticipants명';
 }

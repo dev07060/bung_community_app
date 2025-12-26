@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../../core/utils/logger.dart';
+import '../../../../shared/components/f_dialog.dart';
 import '../../../providers/notification_providers.dart';
 import '../../../providers/settings_providers.dart';
 
@@ -99,28 +102,16 @@ mixin RuleManagementEventMixin {
 
   // Private helper methods
   Future<bool> _showDeleteConfirmDialog(BuildContext context) async {
-    return await showDialog<bool>(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('회칙 삭제'),
-            content: const Text(
-              '정말 회칙을 삭제하시겠습니까?\n'
-              '삭제된 회칙은 복구할 수 없으며, AI 챗봇이 더 이상 회칙 관련 질문에 답변할 수 없습니다.',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('취소'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                style: TextButton.styleFrom(foregroundColor: Colors.red),
-                child: const Text('삭제'),
-              ),
-            ],
-          ),
-        ) ??
-        false;
+    final completer = Completer<bool>();
+    FDialog.twoButton(
+      context,
+      title: '회칙 삭제',
+      description: '정말 회칙을 삭제하시겠습니까?\n삭제된 회칙은 복구할 수 없으며, AI 챗봇이 더 이상 회칙 관련 질문에 답변할 수 없습니다.',
+      confirmText: '삭제',
+      onConfirm: () => completer.complete(true),
+      onCancel: () => completer.complete(false),
+    ).show(context);
+    return completer.future;
   }
 
   Future<void> _sendRuleUpdateNotification(WidgetRef ref, String message) async {

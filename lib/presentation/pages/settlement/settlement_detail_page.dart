@@ -82,10 +82,36 @@ class _SettlementDetailContent extends HookConsumerWidget {
             _buildReceiptSection(),
             const SizedBox(height: 24),
             _buildPaymentSummary(),
-            const SizedBox(height: 32),
-            if (userPaymentStatus == PaymentStatus.pending) _buildPaymentButton(eventMixin, currentUser.id),
+            const SizedBox(height: 24),
+            if (userPaymentStatus == PaymentStatus.pending) _buildPaymentGuide(),
           ],
         ),
+      ),
+    );
+  }
+  
+  Widget _buildPaymentGuide() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.amber[50],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.amber[200]!),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.info_outline, color: Colors.amber[700]),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              '위 계좌로 입금 후 주최자에게 알려주세요.\n주최자가 입금 확인 후 정산을 완료합니다.',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.amber[900],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -495,30 +521,6 @@ class _SettlementDetailContent extends HookConsumerWidget {
             ],
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildPaymentButton(SettlementDetailEvent eventMixin, String userId) {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: () => eventMixin.markPaymentComplete(settlement.id, userId),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.blue,
-          foregroundColor: Colors.white,
-          minimumSize: const Size(double.infinity, 52),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-        child: const Text(
-          '입금 완료 알림',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
       ),
     );
   }

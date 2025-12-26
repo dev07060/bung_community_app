@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -5,6 +7,7 @@ import 'package:our_bung_play/core/router.dart';
 import 'package:our_bung_play/domain/entities/event_entity.dart';
 import 'package:our_bung_play/presentation/pages/home/mixins/home_event_mixin.dart';
 import 'package:our_bung_play/presentation/providers/event_providers.dart';
+import 'package:our_bung_play/shared/components/f_dialog.dart';
 import 'package:our_bung_play/shared/themes/f_colors.dart';
 import 'package:our_bung_play/shared/themes/f_font_styles.dart';
 
@@ -80,7 +83,7 @@ class EventListItem extends ConsumerWidget with HomeEventMixin {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        _EventStatusIcon(status: event.status),
+        _EventStatusIcon(status: event.computedStatus),
         const SizedBox(width: 10),
         Expanded(
           child: Text(
@@ -91,7 +94,7 @@ class EventListItem extends ConsumerWidget with HomeEventMixin {
             overflow: TextOverflow.ellipsis,
           ),
         ),
-        _EventStatusChip(status: event.status),
+        _EventStatusChip(status: event.computedStatus),
       ],
     );
   }
@@ -365,19 +368,19 @@ class _ManagementButton extends ConsumerWidget with HomeEventMixin {
   }
 
   Future<void> _completeEvent(BuildContext context, WidgetRef ref, String eventId) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('벙 완료'),
-        content: const Text('이 벙을 완료 처리하시겠습니까?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('아니오')),
-          TextButton(onPressed: () => Navigator.of(context).pop(true), child: const Text('예')),
-        ],
-      ),
-    );
+    final completer = Completer<bool>();
+    FDialog.twoButton(
+      context,
+      title: '벙 완료',
+      description: '이 벙을 완료 처리하시겠습니까?',
+      confirmText: '예',
+      cancelText: '아니오',
+      onConfirm: () => completer.complete(true),
+      onCancel: () => completer.complete(false),
+    ).show(context);
 
-    if (confirmed == true) {
+    final confirmed = await completer.future;
+    if (confirmed) {
       final success = await ref.read(eventManagementProvider.notifier).completeEvent(eventId);
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('벙을 완료 처리했습니다.')));

@@ -16,6 +16,9 @@ abstract class SettlementRepository {
   /// 참여자 입금 완료 처리
   Future<void> markPaymentComplete(String settlementId, String userId);
 
+  /// 참여자 입금 대기 처리 (토글용)
+  Future<void> markPaymentPending(String settlementId, String userId);
+
   /// 정산 완료 처리
   Future<void> completeSettlement(String settlementId);
 

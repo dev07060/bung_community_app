@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../shared/components/f_dialog.dart';
 import '../exceptions/app_exceptions.dart';
 import '../utils/logger.dart';
 
@@ -292,31 +293,23 @@ mixin ErrorHandlerMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   }) {
     if (!mounted) return;
 
-    showDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('오류'),
-        content: Text(exception.userMessage),
-        actions: [
-          if (onCancel != null)
-            TextButton(
-              onPressed: onCancel,
-              child: const Text('취소'),
-            ),
-          if (onRetry != null)
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                onRetry();
-              },
-              child: const Text('다시 시도'),
-            ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('확인'),
-          ),
-        ],
-      ),
-    );
+    if (onRetry != null) {
+      FDialog.twoButton(
+        context,
+        title: '오류',
+        description: exception.userMessage,
+        confirmText: '다시 시도',
+        cancelText: '확인',
+        onConfirm: onRetry,
+        onCancel: onCancel ?? () {},
+      ).show(context);
+    } else {
+      FDialog.oneButton(
+        title: '오류',
+        description: exception.userMessage,
+        confirmText: '확인',
+        onConfirm: onCancel ?? () {},
+      ).show(context);
+    }
   }
 }

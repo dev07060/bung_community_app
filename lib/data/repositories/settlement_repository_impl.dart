@@ -185,6 +185,17 @@ class SettlementRepositoryImpl implements SettlementRepository {
   }
 
   @override
+  Future<void> markPaymentPending(String settlementId, String userId) async {
+    try {
+      await _settlementsCollection.doc(settlementId).update({
+        'paymentStatus.$userId': PaymentStatus.pending.name,
+      });
+    } catch (e) {
+      throw NetworkException('입금 대기 처리에 실패했습니다: ${e.toString()}');
+    }
+  }
+
+  @override
   Future<void> completeSettlement(String settlementId) async {
     try {
       await _settlementsCollection.doc(settlementId).update({

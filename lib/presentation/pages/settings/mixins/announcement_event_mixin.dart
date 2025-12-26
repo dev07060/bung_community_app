@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:our_bung_play/core/utils/logger.dart';
+import 'package:our_bung_play/shared/components/f_dialog.dart';
 
 /// 공지사항 발송 화면 이벤트 처리 Mixin
 mixin AnnouncementEventMixin {
@@ -42,55 +45,16 @@ mixin AnnouncementEventMixin {
     String title,
     bool isUrgent,
   ) async {
-    return await showDialog<bool>(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: Text(isUrgent ? '긴급 공지 발송' : '공지사항 발송'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('제목: $title'),
-                const SizedBox(height: 8),
-                if (isUrgent)
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.red.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(4),
-                      border: Border.all(color: Colors.red.withOpacity(0.3)),
-                    ),
-                    child: const Row(
-                      children: [
-                        Icon(Icons.priority_high, color: Colors.red, size: 16),
-                        SizedBox(width: 4),
-                        Text(
-                          '긴급 공지로 발송됩니다',
-                          style: TextStyle(color: Colors.red, fontSize: 12),
-                        ),
-                      ],
-                    ),
-                  ),
-                const SizedBox(height: 8),
-                const Text('모든 채널 멤버에게 푸시 알림이 발송됩니다.'),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('취소'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                style: TextButton.styleFrom(
-                  foregroundColor: isUrgent ? Colors.red : null,
-                ),
-                child: const Text('발송'),
-              ),
-            ],
-          ),
-        ) ??
-        false;
+    final completer = Completer<bool>();
+    FDialog.twoButton(
+      context,
+      title: isUrgent ? '긴급 공지 발송' : '공지사항 발송',
+      description: '제목: $title\n${isUrgent ? '긴급 공지로 발송됩니다.\n' : ''}모든 채널 멤버에게 푸시 알림이 발송됩니다.',
+      confirmText: '발송',
+      onConfirm: () => completer.complete(true),
+      onCancel: () => completer.complete(false),
+    ).show(context);
+    return completer.future;
   }
 
   Future<void> _performAnnouncementSending(

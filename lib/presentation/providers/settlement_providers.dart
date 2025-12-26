@@ -82,17 +82,20 @@ class SettlementActions extends _$SettlementActions {
     final repository = ref.read(settlementRepositoryProvider);
     await repository.markPaymentComplete(settlementId, userId);
 
+    // Invalidate related providers
+    ref.invalidate(settlementProvider(settlementId));
+    ref.invalidate(eventSettlementProvider);
+    ref.invalidate(userSettlementsProvider);
+  }
+
+  Future<void> markPaymentPending(String settlementId, String userId) async {
+    final repository = ref.read(settlementRepositoryProvider);
+    await repository.markPaymentPending(settlementId, userId);
+
     // Invalidate to get the updated settlement
     ref.invalidate(settlementProvider(settlementId));
-    final updatedSettlement = await ref.read(settlementProvider(settlementId).future);
-
-    if (updatedSettlement != null && updatedSettlement.allPaymentsCompleted) {
-      await completeSettlement(settlementId);
-    } else {
-        // Invalidate other providers
-        ref.invalidate(eventSettlementProvider);
-        ref.invalidate(userSettlementsProvider);
-    }
+    ref.invalidate(eventSettlementProvider);
+    ref.invalidate(userSettlementsProvider);
   }
 
   Future<void> completeSettlement(String settlementId) async {

@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../../core/utils/logger.dart';
 import '../../../../core/exceptions/app_exceptions.dart';
+import '../../../../shared/components/f_dialog.dart';
 import '../../../providers/channel_providers.dart';
 
 /// 채널 관련 이벤트를 처리하는 Mixin Class
@@ -322,26 +325,17 @@ mixin class ChannelEventMixin {
     String cancelText = '취소',
     bool isDestructive = false,
   }) async {
-    return await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(title),
-        content: Text(content),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(cancelText),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: isDestructive
-                ? TextButton.styleFrom(foregroundColor: Colors.red)
-                : null,
-            child: Text(confirmText),
-          ),
-        ],
-      ),
-    ) ?? false;
+    final completer = Completer<bool>();
+    FDialog.twoButton(
+      context,
+      title: title,
+      description: content,
+      confirmText: confirmText,
+      cancelText: cancelText,
+      onConfirm: () => completer.complete(true),
+      onCancel: () => completer.complete(false),
+    ).show(context);
+    return completer.future;
   }
   
   /// 채널 생성 후 처리

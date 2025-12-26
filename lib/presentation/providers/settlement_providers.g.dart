@@ -571,7 +571,7 @@ class _OrganizerSettlementsProviderElement
       (origin as OrganizerSettlementsProvider).organizerId;
 }
 
-String _$settlementActionsHash() => r'be2d8b61ae3ca94b044f55f2414459540dd05c65';
+String _$settlementActionsHash() => r'45508cca5158b7b5d9243c363fd60768fa4e327f';
 
 /// See also [SettlementActions].
 @ProviderFor(SettlementActions)

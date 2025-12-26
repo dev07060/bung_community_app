@@ -9,6 +9,7 @@ import 'package:our_bung_play/presentation/pages/auth/profile_setup_page.dart';
 import 'package:our_bung_play/presentation/pages/channel/no_channel_page.dart';
 import 'package:our_bung_play/presentation/pages/main/main_navigation_page.dart';
 import 'package:our_bung_play/presentation/providers/channel_providers.dart';
+import 'package:our_bung_play/shared/components/f_dialog.dart';
 
 /// 인증 상태에 따라 적절한 화면을 보여주는 래퍼
 class AuthWrapper extends ConsumerWidget with AuthStateMixin {
@@ -246,42 +247,24 @@ class _UserRestrictedScreen extends StatelessWidget {
   }
 
   void _showContactDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('관리자 문의'),
-        content: const Text('관리자 문의 기능은 준비 중입니다.\n이메일로 문의해 주세요.\n\nsupport@ourbungplay.com'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('확인'),
-          ),
-        ],
-      ),
-    );
+    FDialog.oneButton(
+      title: '관리자 문의',
+      description: '관리자 문의 기능은 준비 중입니다.\n이메일로 문의해 주세요.\n\nsupport@ourbungplay.com',
+      confirmText: '확인',
+      onConfirm: () {},
+    ).show(context);
   }
 
   void _showLogoutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('로그아웃'),
-        content: const Text('현재 계정에서 로그아웃하고\n다른 계정으로 로그인하시겠습니까?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('취소'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              // TODO: 로그아웃 로직 구현
-              // ref.read(authStateProvider.notifier).signOut();
-            },
-            child: const Text('로그아웃'),
-          ),
-        ],
-      ),
-    );
+    FDialog.twoButton(
+      context,
+      title: '로그아웃',
+      description: '현재 계정에서 로그아웃하고\n다른 계정으로 로그인하시겠습니까?',
+      confirmText: '로그아웃',
+      onConfirm: () {
+        // TODO: 로그아웃 로직 구현
+        // ref.read(authStateProvider.notifier).signOut();
+      },
+    ).show(context);
   }
 }

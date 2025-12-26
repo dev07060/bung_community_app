@@ -18,28 +18,40 @@ class EventListHeader extends HookConsumerWidget {
     final sortOption = ref.watch(eventListSortOptionProvider);
     final statusFilters = ref.watch(eventListStatusFiltersProvider);
 
-    final hasActiveFilters = (sortOption != EventSortOption.dateAsc || statusFilters.isNotEmpty);
+    final hasActiveFilters = (sortOption != EventSortOption.dateDesc || statusFilters.isNotEmpty);
 
     return Container(
-      color: Colors.white,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: .08),
+            blurRadius: 10,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
       padding: const EdgeInsets.all(16),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // 검색창 또는 활성 필터 표시
-          hasActiveFilters
-              ? const _ActiveFilters()
-              : FSearchBar.normal(
-                  controller: searchController,
-                  hintText: '벙 제목, 설명, 장소로 검색...',
-                  onChanged: (value) {
-                    ref.read(eventListSearchQueryProvider.notifier).state = value;
-                  },
-                  onClear: () {
-                    ref.read(eventListSearchQueryProvider.notifier).state = '';
-                  },
-                ),
+          // 검색창 (항상 표시)
+          FSearchBar.normal(
+            controller: searchController,
+            hintText: '벙 제목, 설명, 장소로 검색...',
+            onChanged: (value) {
+              ref.read(eventListSearchQueryProvider.notifier).state = value;
+            },
+            onClear: () {
+              ref.read(eventListSearchQueryProvider.notifier).state = '';
+            },
+          ),
           const Gap(12),
+          // 활성 필터 표시 (있을 경우)
+          if (hasActiveFilters) ...[
+            const _ActiveFilters(),
+            const Gap(12),
+          ],
           // 빠른 필터 칩
           const _QuickFilterChips(),
         ],
@@ -112,7 +124,7 @@ class _ActiveFilters extends ConsumerWidget {
                 ),
               )),
           FSearchChips(
-            label: '모든 필터 초기화',
+            label: '필터 초기화',
             onTap: () {
               ref.read(eventListSortOptionProvider.notifier).state = EventSortOption.dateAsc;
               ref.read(eventListStatusFiltersProvider.notifier).state = {};

@@ -91,7 +91,7 @@ class _CardHeader extends StatelessWidget {
             maxLines: 2,
           ),
         ),
-        _StatusChip(status: event.status),
+        _StatusChip(status: event.computedStatus),
       ],
     );
   }

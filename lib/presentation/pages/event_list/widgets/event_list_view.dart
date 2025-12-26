@@ -53,37 +53,44 @@ class EventListView extends HookConsumerWidget {
           );
         }
 
-        return CustomScrollView(
-          slivers: [
-            const SliverToBoxAdapter(child: SizedBox(height: 130)),
-            SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  if (!animatedItems.value.contains(index)) {
-                    animatedItems.value.add(index);
-                    return TweenAnimationBuilder(
-                      tween: Tween<double>(begin: 0.0, end: 1.0),
-                      duration: Duration(milliseconds: 500 + (index * 50)),
-                      curve: Curves.easeOut,
-                      builder: (context, double value, child) {
-                        return Opacity(
-                          opacity: value,
-                          child: Transform.translate(
-                            offset: Offset(0, 50 * (1 - value)),
-                            child: child,
-                          ),
-                        );
-                      },
-                      child: EventCard(event: events[index]),
-                    );
-                  }
-                  return EventCard(event: events[index]);
-                },
-                childCount: events.length,
+        return RefreshIndicator(
+          onRefresh: () async {
+            ref.invalidate(channelEventsProvider(channelId));
+          },
+          edgeOffset: 140, // 헤더 높이만큼 offset
+          child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              const SliverToBoxAdapter(child: SizedBox(height: 140)),
+              SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    if (!animatedItems.value.contains(index)) {
+                      animatedItems.value.add(index);
+                      return TweenAnimationBuilder(
+                        tween: Tween<double>(begin: 0.0, end: 1.0),
+                        duration: Duration(milliseconds: 500 + (index * 50)),
+                        curve: Curves.easeOut,
+                        builder: (context, double value, child) {
+                          return Opacity(
+                            opacity: value,
+                            child: Transform.translate(
+                              offset: Offset(0, 50 * (1 - value)),
+                              child: child,
+                            ),
+                          );
+                        },
+                        child: EventCard(event: events[index]),
+                      );
+                    }
+                    return EventCard(event: events[index]);
+                  },
+                  childCount: events.length,
+                ),
               ),
-            ),
-            const SliverToBoxAdapter(child: Gap(20)),
-          ],
+              const SliverToBoxAdapter(child: Gap(20)),
+            ],
+          ),
         );
       },
       loading: () => const _LoadingIndicator(),

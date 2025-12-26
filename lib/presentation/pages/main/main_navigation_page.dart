@@ -28,26 +28,37 @@ class _MainNavigationContent extends HookConsumerWidget with MainNavigationState
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentIndex = useState(0);
-    final pageController = usePageController();
+    // 방문한 탭을 추적하여 lazy loading 구현
+    final visitedTabs = useState<Set<int>>({0}); // 첫 번째 탭만 초기 로드
     final userChannelsAsync = useUserChannels(ref);
     final appBars = getAppBars(context, ref);
+
+    // 탭 변경 시 방문 기록 업데이트
+    void onTabChanged(int index) {
+      currentIndex.value = index;
+      if (!visitedTabs.value.contains(index)) {
+        visitedTabs.value = {...visitedTabs.value, index};
+      }
+    }
 
     return Scaffold(
       backgroundColor: FColors.current.backgroundNormalA,
       appBar: appBars[currentIndex.value],
-      body: PageView(
-        controller: pageController,
-        onPageChanged: (index) => currentIndex.value = index,
-        children: const [
-          HomePage(showAppBar: false),
-          EventListPage(showAppBar: false),
-          SettingsPage(showAppBar: false),
+      body: IndexedStack(
+        index: currentIndex.value,
+        children: [
+          // 홈 페이지 - 항상 로드
+          const HomePage(showAppBar: false),
+          // 이벤트 목록 - 방문 시에만 로드
+          visitedTabs.value.contains(1) ? const EventListPage(showAppBar: false) : const SizedBox.shrink(),
+          // 설정 - 방문 시에만 로드
+          visitedTabs.value.contains(2) ? const SettingsPage(showAppBar: false) : const SizedBox.shrink(),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: FColors.current.white,
         currentIndex: currentIndex.value,
-        onTap: (index) => onTabTapped(index, pageController, currentIndex),
+        onTap: onTabChanged,
         type: BottomNavigationBarType.fixed,
         selectedItemColor: Theme.of(context).primaryColor,
         unselectedItemColor: Colors.grey,

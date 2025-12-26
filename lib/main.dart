@@ -1,8 +1,6 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:our_bung_play/core/config/firebase_config.dart';
 import 'package:our_bung_play/core/constants/app_constants.dart';
 import 'package:our_bung_play/core/providers/global_providers.dart';
 import 'package:our_bung_play/core/router.dart';
@@ -10,32 +8,22 @@ import 'package:our_bung_play/core/services/app_initialization_service.dart';
 import 'package:our_bung_play/core/utils/logger.dart';
 import 'package:our_bung_play/core/widgets/error_widgets.dart';
 import 'package:our_bung_play/data/services/notification_handler_service.dart';
-import 'package:our_bung_play/firebase_options.dart';
 import 'package:our_bung_play/presentation/providers/notification_providers.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   try {
-    // Initialize app services with comprehensive error handling
+    // Initialize app services (includes Firebase)
     final appInitService = AppInitializationService();
     await appInitService.initialize();
-
-    // Initialize Firebase (if not already done by app init service)
-    await FirebaseConfig.initialize();
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-    Logger.info('Firebase initialized successfully');
+    Logger.info('App initialization completed');
 
     // Initialize global container
     initializeGlobalContainer();
     Logger.info('Global container initialized');
 
-    // Initialize notification system
-    await globalContainer.read(notificationInitializationProvider.future);
-    Logger.info('Notification system initialized');
-
+    // Run the app first, initialize notifications after first frame
     runApp(
       UncontrolledProviderScope(
         container: globalContainer,
@@ -44,6 +32,16 @@ void main() async {
         ),
       ),
     );
+
+    // Initialize notification system after app starts (non-blocking)
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      try {
+        await globalContainer.read(notificationInitializationProvider.future);
+        Logger.info('Notification system initialized');
+      } catch (e) {
+        Logger.error('Notification initialization failed: $e');
+      }
+    });
   } catch (e, stackTrace) {
     Logger.error('Failed to initialize app', e, stackTrace);
     runApp(ErrorApp(error: e, stackTrace: stackTrace));

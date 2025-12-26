@@ -228,30 +228,58 @@ class SettlementCard extends ConsumerWidget {
       );
     }
 
-    // 정산 상태인 경우 (일반 참여자)
-    if (event.status == EventStatus.settlement) {
-      return Column(
-        children: [
-          const Gap(16),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {
-                settlementAsync.when(
-                  data: (settlement) {
-                    if (settlement != null) {
-                      Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => SettlementDetailPage(event: event, settlementId: settlement.id)));
-                    }
+    // 정산 또는 완료 상태인 경우 (일반 참여자)
+    final status = event.computedStatus;
+    if (status == EventStatus.settlement || status == EventStatus.completed) {
+      return settlementAsync.when(
+        data: (settlement) {
+          // 정산이 아직 생성되지 않은 경우
+          if (settlement == null) {
+            return const Column(
+              children: [
+                Gap(16),
+                Text(
+                  '정산 정보가 아직 등록되지 않았습니다.',
+                  style: TextStyle(color: Colors.grey),
+                ),
+              ],
+            );
+          }
+          return Column(
+            children: [
+              const Gap(16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => SettlementDetailPage(
+                        event: event,
+                        settlementId: settlement.id,
+                      ),
+                    ));
                   },
-                  loading: () {},
-                  error: (_, __) {},
-                );
-              },
-              child: const Text('정산 내역 보기'),
+                  child: const Text('정산 내역 보기'),
+                ),
+              ),
+            ],
+          );
+        },
+        loading: () => const Column(
+          children: [
+            Gap(16),
+            Center(child: CircularProgressIndicator()),
+          ],
+        ),
+        error: (_, __) => const Column(
+          children: [
+            Gap(16),
+            Text(
+              '정산 정보를 불러올 수 없습니다.',
+              style: TextStyle(color: Colors.red),
             ),
-          ),
-        ],
+          ],
+        ),
       );
     }
 

@@ -58,6 +58,66 @@ class NotificationServiceImpl implements NotificationService {
   }
 
   @override
+  Future<void> registerToken({
+    required String userId,
+    required String token,
+    required String platform,
+    String? deviceId,
+  }) async {
+    try {
+      final tokenData = {
+        'createdAt': FieldValue.serverTimestamp(),
+        'platform': platform,
+        'deviceId': deviceId ?? token.substring(0, 20),
+        'lastUpdatedAt': FieldValue.serverTimestamp(),
+      };
+
+      await _firestore.collection('users').doc(userId).set({
+        'fcmTokens': {token: tokenData},
+      }, SetOptions(merge: true));
+
+      Logger.info('FCM token registered for user: $userId');
+    } catch (e) {
+      Logger.error('Failed to register FCM token: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> removeToken({
+    required String userId,
+    required String token,
+  }) async {
+    try {
+      await _firestore.collection('users').doc(userId).update({
+        'fcmTokens.$token': FieldValue.delete(),
+      });
+
+      Logger.info('FCM token removed for user: $userId');
+    } catch (e) {
+      Logger.error('Failed to remove FCM token: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> removeAllTokens(String userId) async {
+    try {
+      await _firestore.collection('users').doc(userId).update({
+        'fcmTokens': FieldValue.delete(),
+      });
+
+      // Also delete local FCM token
+      await _firebaseMessaging.deleteToken();
+
+      Logger.info('All FCM tokens removed for user: $userId');
+    } catch (e) {
+      Logger.error('Failed to remove all FCM tokens: $e');
+      rethrow;
+    }
+  }
+
+  @override
   Future<bool> requestPermissions() async {
     try {
       final settings = await _firebaseMessaging.requestPermission(
@@ -429,9 +489,18 @@ class NotificationServiceImpl implements NotificationService {
       for (final userId in userIds) {
         final userDoc = await _firestore.collection('users').doc(userId).get();
         if (userDoc.exists) {
-          final fcmToken = userDoc.data()?['fcmToken'] as String?;
-          if (fcmToken != null && fcmToken.isNotEmpty) {
-            tokens.add(fcmToken);
+          final data = userDoc.data();
+
+          // Support new fcmTokens Map structure (multi-device)
+          final fcmTokensMap = data?['fcmTokens'] as Map<String, dynamic>?;
+          if (fcmTokensMap != null && fcmTokensMap.isNotEmpty) {
+            tokens.addAll(fcmTokensMap.keys);
+          } else {
+            // Fallback to legacy fcmToken field for backward compatibility
+            final fcmToken = data?['fcmToken'] as String?;
+            if (fcmToken != null && fcmToken.isNotEmpty) {
+              tokens.add(fcmToken);
+            }
           }
         }
       }

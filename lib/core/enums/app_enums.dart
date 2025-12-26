@@ -70,11 +70,16 @@ enum ChannelStatus {
 enum NotificationType {
   eventCreated, // 새 벙 생성
   eventUpdated, // 벙 정보 변경
+  eventClosed, // 벙 마감
+  eventStarting, // 벙 시작 임박 (30분 전)
   eventCancelled, // 벙 취소
   eventJoined, // 벙 참여
   eventLeft, // 벙 참여 취소
+  eventCompleted, // 벙 완료
   settlementCreated, // 정산 생성
+  settlementCompleted, // 정산 완료
   paymentReceived, // 입금 완료
+  paymentReminder, // 입금 독촉
   announcement, // 공지사항
   memberJoined, // 새 멤버 가입
   memberLeft // 멤버 탈퇴

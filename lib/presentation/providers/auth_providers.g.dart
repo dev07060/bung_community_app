@@ -140,7 +140,7 @@ final authenticatedUserProvider =
 );
 
 typedef _$AuthenticatedUser = AutoDisposeStreamNotifier<UserEntity?>;
-String _$authStateHash() => r'747fd8223e4acfe8b91d5477100e08513efafa21';
+String _$authStateHash() => r'1cdc4a6e6a1985eb42388ff3d7f2404f90c945d3';
 
 /// 로그인 상태 Provider
 ///

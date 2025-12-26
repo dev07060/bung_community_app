@@ -8,6 +8,23 @@ abstract class NotificationService {
   /// Get FCM token for current device
   Future<String?> getFCMToken();
 
+  /// Register FCM token for current user (multi-device support)
+  Future<void> registerToken({
+    required String userId,
+    required String token,
+    required String platform,
+    String? deviceId,
+  });
+
+  /// Remove FCM token (on logout or token refresh)
+  Future<void> removeToken({
+    required String userId,
+    required String token,
+  });
+
+  /// Remove all FCM tokens for user (on account deletion or full logout)
+  Future<void> removeAllTokens(String userId);
+
   /// Send notification to specific users
   Future<void> sendNotificationToUsers({
     required List<String> userIds,

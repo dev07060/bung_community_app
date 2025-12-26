@@ -137,3 +137,6 @@ app.*.symbols
 .env.*
 *.env
 *.env.*
+
+**/*.freezed
+**/*.g.dart

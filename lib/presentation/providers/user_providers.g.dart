@@ -39,7 +39,7 @@ final firebaseStorageProvider = AutoDisposeProvider<FirebaseStorage>.internal(
 );
 
 typedef FirebaseStorageRef = AutoDisposeProviderRef<FirebaseStorage>;
-String _$userHash() => r'5fc3f0fec8c6c225076951d9a7587b40202dc237';
+String _$userHash() => r'3378ebbad45d900719cfe3c20616c6e9a258d684';
 
 /// Copied from Dart SDK
 class _SystemHash {

@@ -1,38 +1,17 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:our_bung_play/core/enums/app_enums.dart';
 import 'package:our_bung_play/core/exceptions/app_exceptions.dart';
-import 'package:our_bung_play/core/security/encryption_service.dart';
 import 'package:our_bung_play/core/security/input_validator.dart';
 import 'package:our_bung_play/core/security/security_audit.dart';
-import 'package:our_bung_play/core/security/security_config.dart';
 import 'package:our_bung_play/domain/entities/settlement_entity.dart';
 import 'package:our_bung_play/domain/repositories/settlement_repository.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class SettlementRepositoryImpl implements SettlementRepository {
   final FirebaseFirestore _firestore;
-  String? _encryptionKey;
 
-  SettlementRepositoryImpl({FirebaseFirestore? firestore}) : _firestore = firestore ?? FirebaseFirestore.instance {
-    _initializeEncryption();
-  }
+  SettlementRepositoryImpl({FirebaseFirestore? firestore}) : _firestore = firestore ?? FirebaseFirestore.instance;
 
   CollectionReference get _settlementsCollection => _firestore.collection('settlements');
-
-  /// Initializes encryption key for sensitive data
-  Future<void> _initializeEncryption() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      _encryptionKey = prefs.getString(SecurityConfig.encryptionKeyStorageKey);
-
-      if (_encryptionKey == null) {
-        _encryptionKey = EncryptionService.generateSecureKey();
-        await prefs.setString(SecurityConfig.encryptionKeyStorageKey, _encryptionKey!);
-      }
-    } catch (e) {
-      throw SecurityException('Failed to initialize encryption: $e');
-    }
-  }
 
   /// Validates settlement data before processing
   Future<void> _validateSettlementData(SettlementEntity settlement, String userId) async {
@@ -83,11 +62,6 @@ class SettlementRepositoryImpl implements SettlementRepository {
   @override
   Future<SettlementEntity> createSettlement(SettlementEntity settlement) async {
     try {
-      // Ensure encryption is initialized
-      if (_encryptionKey == null) {
-        await _initializeEncryption();
-      }
-
       // Validate settlement data
       await _validateSettlementData(settlement, settlement.organizerId);
 
@@ -109,27 +83,8 @@ class SettlementRepositoryImpl implements SettlementRepository {
 
       await docRef.set(_settlementToFirestore(settlementWithId));
 
-      // Log encryption event
-      await SecurityAudit.logEncryptionEvent(
-        userId: settlement.organizerId,
-        encryptionType: EncryptionEventType.encrypt,
-        dataType: 'settlement_account_info',
-        success: true,
-      );
-
       return settlementWithId;
     } catch (e) {
-      // Log encryption failure if it's an encryption error
-      if (e is EncryptionException) {
-        await SecurityAudit.logEncryptionEvent(
-          userId: settlement.organizerId,
-          encryptionType: EncryptionEventType.encrypt,
-          dataType: 'settlement_account_info',
-          success: false,
-          errorMessage: e.message,
-        );
-      }
-
       throw NetworkException('정산 생성에 실패했습니다: ${e.toString()}');
     }
   }
@@ -144,7 +99,11 @@ class SettlementRepositoryImpl implements SettlementRepository {
       }
 
       return _settlementFromFirestore(querySnapshot.docs.first);
-    } catch (e) {
+    } catch (e, stackTrace) {
+      // Log the actual error for debugging
+      print('❌ getEventSettlement error for eventId: $eventId');
+      print('❌ Error: $e');
+      print('❌ StackTrace: $stackTrace');
       throw NetworkException('정산 조회에 실패했습니다: ${e.toString()}');
     }
   }
@@ -245,26 +204,16 @@ class SettlementRepositoryImpl implements SettlementRepository {
 
   // Helper methods for Firestore conversion
   Map<String, dynamic> _settlementToFirestore(SettlementEntity settlement) {
-    // Encrypt sensitive bank account information
-    final encryptedBankInfo = _encryptionKey != null
-        ? EncryptionService.encryptBankAccount(
-            bankName: settlement.bankName,
-            accountNumber: settlement.accountNumber,
-            accountHolder: settlement.accountHolder,
-            encryptionKey: _encryptionKey!,
-          )
-        : {
-            'bankName': settlement.bankName,
-            'accountNumber': settlement.accountNumber,
-            'accountHolder': settlement.accountHolder,
-          };
+    // NOTE: Encryption disabled temporarily due to per-device key issue
+    // Bank account info is stored in plain text for now
+    // TODO: Implement server-side encryption or shared key management
 
     return {
       'eventId': settlement.eventId,
       'organizerId': settlement.organizerId,
-      'bankName': encryptedBankInfo['bankName'],
-      'accountNumber': encryptedBankInfo['accountNumber'],
-      'accountHolder': encryptedBankInfo['accountHolder'],
+      'bankName': settlement.bankName,
+      'accountNumber': settlement.accountNumber,
+      'accountHolder': settlement.accountHolder,
       'totalAmount': settlement.totalAmount,
       'participantAmounts': settlement.participantAmounts,
       'paymentStatus': settlement.paymentStatus.map(
@@ -279,29 +228,20 @@ class SettlementRepositoryImpl implements SettlementRepository {
   SettlementEntity _settlementFromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
 
-    // Decrypt sensitive bank account information
-    final decryptedBankInfo = _encryptionKey != null
-        ? EncryptionService.decryptBankAccount(
-            encryptedData: {
-              'bankName': data['bankName'] ?? '',
-              'accountNumber': data['accountNumber'] ?? '',
-              'accountHolder': data['accountHolder'] ?? '',
-            },
-            encryptionKey: _encryptionKey!,
-          )
-        : {
-            'bankName': data['bankName'] ?? '',
-            'accountNumber': data['accountNumber'] ?? '',
-            'accountHolder': data['accountHolder'] ?? '',
-          };
+    // Bank account info stored in plain text (encryption disabled)
+    final bankInfo = {
+      'bankName': data['bankName'] ?? '',
+      'accountNumber': data['accountNumber'] ?? '',
+      'accountHolder': data['accountHolder'] ?? '',
+    };
 
     return SettlementEntity(
       id: doc.id,
       eventId: data['eventId'] ?? '',
       organizerId: data['organizerId'] ?? '',
-      bankName: decryptedBankInfo['bankName'] ?? '',
-      accountNumber: decryptedBankInfo['accountNumber'] ?? '',
-      accountHolder: decryptedBankInfo['accountHolder'] ?? '',
+      bankName: bankInfo['bankName'] ?? '',
+      accountNumber: bankInfo['accountNumber'] ?? '',
+      accountHolder: bankInfo['accountHolder'] ?? '',
       totalAmount: (data['totalAmount'] ?? 0).toDouble(),
       participantAmounts: Map<String, double>.from(
         (data['participantAmounts'] ?? {}).map(

@@ -64,6 +64,10 @@ dependencies:
   flutter_bounceable: ^1.2.0
   flutter_svg: ^2.2.1
   fluttertoast: ^8.2.12
+  
+  # Local Notifications
+  flutter_local_notifications: ^18.0.1
+  timezone: ^0.10.0
 
 dev_dependencies:
   flutter_test:

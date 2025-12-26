@@ -1,6 +1,7 @@
 import 'package:our_bung_play/core/enums/app_enums.dart';
 import 'package:our_bung_play/core/utils/logger.dart';
 import 'package:our_bung_play/data/repositories/notification_repository_impl.dart';
+import 'package:our_bung_play/data/services/local_notification_service.dart';
 import 'package:our_bung_play/data/services/notification_handler_service.dart';
 import 'package:our_bung_play/data/services/notification_service.dart';
 import 'package:our_bung_play/data/services/notification_service_impl.dart';
@@ -15,6 +16,12 @@ part 'notification_providers.g.dart';
 @riverpod
 NotificationService notificationService(NotificationServiceRef ref) {
   return NotificationServiceImpl();
+}
+
+/// Local Notification Service Provider (for scheduled reminders)
+@riverpod
+LocalNotificationService localNotificationService(LocalNotificationServiceRef ref) {
+  return LocalNotificationService();
 }
 
 /// Notification Repository Provider

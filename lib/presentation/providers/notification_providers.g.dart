@@ -25,6 +25,26 @@ final notificationServiceProvider =
 );
 
 typedef NotificationServiceRef = AutoDisposeProviderRef<NotificationService>;
+String _$localNotificationServiceHash() =>
+    r'd905e96c43af388898e0c9e16e8d7a76ff2fbf18';
+
+/// Local Notification Service Provider (for scheduled reminders)
+///
+/// Copied from [localNotificationService].
+@ProviderFor(localNotificationService)
+final localNotificationServiceProvider =
+    AutoDisposeProvider<LocalNotificationService>.internal(
+  localNotificationService,
+  name: r'localNotificationServiceProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$localNotificationServiceHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef LocalNotificationServiceRef
+    = AutoDisposeProviderRef<LocalNotificationService>;
 String _$notificationRepositoryHash() =>
     r'7e18093169a7ce23060420f485c48e9d6a512530';
 

@@ -145,6 +145,9 @@ class NotificationHandlerService {
         case NotificationType.eventUpdated:
         case NotificationType.eventJoined:
         case NotificationType.eventLeft:
+        case NotificationType.eventClosed:
+        case NotificationType.eventStarting:
+        case NotificationType.eventCompleted:
           final eventId = data['eventId'];
           if (eventId != null) {
             _navigatorContext!.push('/event-detail/$eventId');
@@ -157,7 +160,9 @@ class NotificationHandlerService {
           break;
 
         case NotificationType.settlementCreated:
+        case NotificationType.settlementCompleted:
         case NotificationType.paymentReceived:
+        case NotificationType.paymentReminder:
           final settlementId = data['settlementId'];
           final eventId = data['eventId'];
           if (settlementId != null) {
@@ -200,6 +205,9 @@ class NotificationHandlerService {
         case NotificationType.eventJoined:
         case NotificationType.eventLeft:
         case NotificationType.eventCancelled:
+        case NotificationType.eventClosed:
+        case NotificationType.eventStarting:
+        case NotificationType.eventCompleted:
           // Invalidate event providers to trigger refresh
           final eventId = data['eventId'];
           if (eventId != null) {
@@ -215,7 +223,9 @@ class NotificationHandlerService {
           break;
 
         case NotificationType.settlementCreated:
+        case NotificationType.settlementCompleted:
         case NotificationType.paymentReceived:
+        case NotificationType.paymentReminder:
           // Invalidate settlement providers
           final settlementId = data['settlementId'];
           final eventId = data['eventId'];
